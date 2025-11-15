@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#f0fdf4" />
   <title>寮費チェッカー</title>
   <style>
     :root {
@@ -23,6 +24,9 @@
       background: linear-gradient(180deg, #ffffff, #f8fafc 40%);
       color: var(--text);
       display: grid; place-items: center; padding: 24px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      -webkit-text-size-adjust: 100%;
     }
     .app {
       width: min(880px, 100%);
@@ -98,7 +102,17 @@
     ul { margin: 8px 0 0 18px; }
     .muted { color: var(--muted); }
     .danger { color: var(--danger); }
-    footer { margin-top: 14px; font-size: 12px; color: var(--muted); text-align: right; }
+    
+    @media (max-width: 480px) {
+      body { padding: 12px; }
+      .app { padding: 16px 14px; border-radius: 14px; }
+      header h1 { font-size: 20px; }
+      .result { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .money { font-size: 32px; }
+      input[type="month"] { font-size: 18px; padding: 14px; }
+      details > summary { font-size: 14px; }
+      .sub { font-size: 13px; }
+    }
   </style>
 </head>
 <body>
@@ -109,8 +123,9 @@
 
     <div class="grid">
       <div class="card">
-        <label for="lastPaid">最後に払った「月分」</label>
-        <input id="lastPaid" type="month" placeholder="YYYY-MM" />
+        <label for="lastPaid">最後に払った「月分」<span class="muted" style="font-weight:400"></span></label>
+        <input id="lastPaid" type="month" placeholder="例: 2025-07" title="最後に払った『月分』（例：2025-07）" />
+        <div class="hint">例：<code>2025-07</code>（7月分まで払った場合）。</div>
         <div class="hint" style="margin-top:10px">
           <label style="display:block;color:var(--muted);font-size:12px;margin-bottom:4px;">基準月（自動）</label>
           <div style="display:flex;gap:8px;align-items:center;">
