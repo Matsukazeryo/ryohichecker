@@ -52,8 +52,10 @@
     label { font-size: 14px; color: var(--muted); display:block; margin-bottom: 6px; }
     input[type="month"] {
       width: 100%;
-      max-width: 100%;
+      max-width: calc(100% - 4px);
       min-width: 0;
+      display: block;
+      margin: 0 auto;
       padding: 12px 12px;
       font-size: 16px;
       color: var(--text);
@@ -126,7 +128,11 @@
       header h1 { font-size: 20px; }
       .result { flex-direction: column; align-items: flex-start; gap: 10px; }
       .money { font-size: 32px; }
-      input[type="month"] { font-size: 18px; padding: 14px; }
+      input[type="month"] {
+        font-size: 18px;
+        padding: 14px;
+        max-width: calc(100% - 8px);
+      }
       details > summary { font-size: 14px; }
       .sub { font-size: 13px; }
     }
@@ -142,7 +148,7 @@
       <div class="card">
         <label for="lastPaid">最後に払った「月分」<span class="muted" style="font-weight:400"></span></label>
         <input id="lastPaid" type="month" placeholder="例: 2025-07" title="最後に払った『月分』（例：2025-07）" />
-        <div class="hint">例：<code>2025-07</code>（7月分まで払った場合）。</div>
+        <div class="hint">例：<code>2025-07</code>（7月分まで払った場合）。上の青い枠をタップして最後に払った「月分」を選んでください。</div>
         <div class="hint" style="margin-top:10px">
           <label style="display:block;color:var(--muted);font-size:12px;margin-bottom:4px;">基準月（自動）</label>
           <div style="display:flex;gap:8px;align-items:center;">
