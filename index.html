@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>罰金額確認アプリ v0.1</title>
+  <style>
+    :root {
+      --bg: #f8fafc;          /* page bg */
+      --card: #ffffff;        /* card bg */
+      --text: #0f172a;        /* slate-900 */
+      --muted: #475569;       /* slate-600 */
+      --accent: #16a34a;      /* green-600 */
+      --accent-2: #3b82f6;    /* blue-500 */
+      --danger: #dc2626;      /* red-600 */
+      --ring: rgba(59,130,246,0.25);
+      --line: rgba(2,6,23,0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", Meiryo, sans-serif;
+      background: linear-gradient(180deg, #ffffff, #f8fafc 40%);
+      color: var(--text);
+      display: grid; place-items: center; padding: 24px;
+    }
+    .app {
+      width: min(880px, 100%);
+      background: #ffffff;
+      backdrop-filter: none;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 20px 20px 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+      position: relative;
+    }
+    header { display:flex; align-items:center; gap:12px; margin-bottom: 16px; }
+    header h1 { font-size: clamp(18px, 2.8vw, 28px); margin: 0; letter-spacing: .02em; }
+    .badge { font-size: 12px; padding: 4px 8px; border-radius: 999px; background: rgba(96,165,250,0.15); color:#cfe3ff; border:1px solid rgba(96,165,250,0.35); }
+
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+    .grid { display:grid; gap: 12px; grid-template-columns: 1fr; }
+    @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+    label { font-size: 14px; color: var(--muted); display:block; margin-bottom: 6px; }
+    input[type="month"] {
+      width: 100%; padding: 12px 12px; font-size: 16px; color: var(--text);
+      background: #f1f5f9; border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none; box-shadow: 0 0 0 0 var(--ring);
+    }
+    input[type="month"]:focus { border-color: var(--accent-2); box-shadow: 0 0 0 4px var(--ring); }
+
+    .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+    .result {
+      display:flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; border-radius: 12px; border:1px solid var(--line);
+      background: linear-gradient(180deg, #ecfdf5, #f0fdf4);
+    }
+    .money { font-size: clamp(22px, 4.2vw, 36px); font-weight: 700; letter-spacing: .02em; position: relative; overflow: hidden; }
+    .money .yen { font-weight: 600; font-size: 0.7em; opacity: .8; margin-right: 2px; }
+    .hero { display:flex; flex-direction:column; gap:8px; }
+    .sub { font-size: 14px; color: var(--muted); }
+    .chip { display:inline-block; padding: 2px 8px; border-radius: 999px; border:1px solid rgba(220,38,38,0.35); background: #fee2e2; }
+    .finechip { border-color: rgba(239,68,68,0.4); }
+    .yen-inline { opacity:.8; margin-right:2px; }
+
+    /* ===== Animations & Effects ===== */
+    @keyframes bump { 0%{ transform:scale(1);} 35%{ transform:scale(1.06);} 100%{ transform:scale(1);} }
+    .money.bump { animation: bump 450ms ease; }
+
+    @keyframes shine { from { left:-120%; } to { left:120%; } }
+    .money.shine::after { content:""; position:absolute; top:0; bottom:0; left:-120%; width:140%; background: linear-gradient(120deg, rgba(255,255,255,0), rgba(255,255,255,0.6) 25%, rgba(255,255,255,0) 50%); animation: shine .8s ease; }
+
+    @keyframes pop { 0%{ transform:scale(.94); } 60%{ transform:scale(1.06);} 100%{ transform:scale(1);} }
+    .chip.pop { animation: pop 380ms ease; }
+
+    /* Details arrow */
+
+    /* Details arrow */
+    details > summary { position:relative; padding-right:18px; }
+    details > summary::after { content:""; position:absolute; right:4px; top:50%; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform: translateY(-50%) rotate(-45deg); transition: transform .2s ease; }
+    details[open] > summary::after { transform: translateY(-50%) rotate(45deg); }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+    .kpi { background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+    .kpi h4 { margin: 0; font-size: 12px; color: var(--muted); font-weight: 500; }
+    .kpi p { margin: 6px 0 0; font-size: 16px; font-weight: 700; }
+
+    details { background: var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+    details > summary { cursor: pointer; font-weight: 600; }
+    details[open] { background: #fff; }
+    ul { margin: 8px 0 0 18px; }
+    .muted { color: var(--muted); }
+    .danger { color: var(--danger); }
+    footer { margin-top: 14px; font-size: 12px; color: var(--muted); text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <span class="badge">beta</span>
+      <h1>罰金額確認アプリ</h1>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <label for="lastPaid">最後に払った「月分」</label>
+        <input id="lastPaid" type="month" placeholder="YYYY-MM" />
+        <div class="hint" style="margin-top:10px">
+          <label style="display:block;color:var(--muted);font-size:12px;margin-bottom:4px;">基準月（自動）</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="basisMonth" type="month" disabled />
+            <label style="font-size:12px;"><input type="checkbox" id="basisManual"/> 手動設定</label>
+          </div>
+          <div class="hint">未チェックなら日本時間で今月を自動取得。</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="result">
+          <div class="hero">
+            <div class="muted">次に払う総額</div>
+            <div class="money"><span class="yen">¥</span><span id="grandTotal">0</span></div>
+            <div class="sub">内訳：寮費 <span class="yen-inline">¥</span><span id="feesTotal">0</span> ＋ <span class="chip finechip">罰金 <span class="yen-inline">¥</span><span id="fine">0</span></span></div>
+          </div>
+          <div class="kpis" style="display:none">
+            <div class="kpi"><h4>滞納(生)</h4><p id="rawCount">0</p></div>
+            <div class="kpi"><h4>特殊後</h4><p id="effCount">0</p></div>
+            <div class="kpi"><h4>対象期間</h4><p id="range">—</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <details id="breakdown">
+        <summary>詳細（罰金の根拠・対象月）</summary>
+        <div class="muted" style="margin:8px 0 6px">毎年 <strong>3–4月分</strong> と <strong>8–9月分</strong> は <strong>2か月で1カウント</strong>。さらに <strong>2025年5–6月分</strong> も 2か月で1カウント。</div>
+        <ul id="explainSimple"></ul>
+        <details id="more" style="margin-top:8px">
+          <summary>さらに詳しく（対象月一覧・各月寮費）</summary>
+          <ul id="explainFull" style="margin-top:6px"></ul>
+        </details>
+        <div class="muted" style="margin-top:8px">
+          罰金テーブル: <strong>2–5か月 → ¥5,000</strong> / <strong>6–11か月 → ¥10,000</strong> / <strong>12か月以上 → ¥15,000</strong>（以降12か月ごとに +¥5,000）。
+        </div>
+      </details>
+    </div>
+
+    <footer>© 罰金額確認アプリ v0.1</footer>
+  </div>
+
+<script>
+(function(){
+  const fmtMoney = (n)=> n.toLocaleString('ja-JP');
+  const ymt = (y,m)=> `${y}年${m}月`;
+  const pad2 = (n)=> String(n).padStart(2, '0');
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ==== Sound policy: no audio output ====
+  (function enforceNoSound(){
+    try {
+      const muteAll = (root=document)=>{
+        root.querySelectorAll && root.querySelectorAll('audio, video').forEach(el => {
+          try {
+            el.muted = true;
+            el.pause && el.pause();
+            el.removeAttribute && el.removeAttribute('autoplay');
+          } catch(_){}
+        });
+      };
+      // Mute anything currently in the DOM
+      muteAll(document);
+      // Also mute anything added later
+      const mo = new MutationObserver(muts => {
+        for (const m of muts){
+          for (const n of m.addedNodes){
+            if (!(n instanceof HTMLElement)) continue;
+            if (n.matches && (n.matches('audio') || n.matches('video'))){
+              try { n.muted = true; n.pause && n.pause(); n.removeAttribute && n.removeAttribute('autoplay'); } catch(_){}
+            }
+            // Nested
+            muteAll(n);
+          }
+        }
+      });
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+    } catch(_){}
+  })();
+
+  // Count-up animation for numbers with commas
+  function animateCount(el, from, to, duration=700){
+    if (prefersReduced) { el.textContent = fmtMoney(to); return; }
+    const start = performance.now();
+    const step = (now)=>{
+      const p = Math.min(1, (now - start) / duration);
+      const val = Math.round(from + (to - from) * (1 - Math.pow(1-p, 3))); // easeOutCubic
+      el.textContent = fmtMoney(val);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  function bump(el){ if(!el) return; el.classList.remove('bump','shine'); void el.offsetWidth; el.classList.add('bump','shine'); setTimeout(()=>{ el.classList.remove('bump','shine'); }, 900); }
+
+
+  const state = { fine: 0, fees: 0, grand: 0 };
+
+  // 現在(日本時間)を取得
+  const nowJST = ()=> new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+
+  // 前月(支払い対象の上限)を返す
+  function prevYearMonth(d){
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1; // 1-12
+    if (m === 1) return {y: y-1, m: 12};
+    return {y, m: m-1};
+  }
+
+  // start(含まず)→end(含む) の月配列を作る
+  function enumerateMonths(start, end){
+    const out = [];
+    let y = start.y, m = start.m;
+    // 1つ進めてから push
+    do {
+      m += 1;
+      if (m === 13) { y++; m = 1; }
+      out.push({y, m});
+    } while (y < end.y || (y === end.y && m < end.m));
+    return out;
+  }
+
+  // 特殊カウントを適用
+  function applySpecialCount(months){
+    const set = new Set(months.map(v=> `${v.y}-${v.m}`));
+    const reductions = [];
+
+    // 毎年の 3-4 / 8-9
+    const years = [...new Set(months.map(v=> v.y))];
+    for (const y of years){
+      if (set.has(`${y}-3`) && set.has(`${y}-4`)) reductions.push({y, pair:[3,4], label:`${y}年3–4月分を「2で1」に圧縮`});
+      if (set.has(`${y}-8`) && set.has(`${y}-9`)) reductions.push({y, pair:[8,9], label:`${y}年8–9月分を「2で1」に圧縮`});
+    }
+    // 2025年5-6のみ特例
+    if (set.has(`2025-5`) && set.has(`2025-6`)) reductions.push({y:2025, pair:[5,6], label:`2025年5–6月分を「2で1」に圧縮`});
+
+    const raw = months.length;
+    const eff = Math.max(0, raw - reductions.length); // 2か月→1か月 なので 1 減らす
+    return { rawCount: raw, effCount: eff, reductions };
+  }
+
+  function calcFine(effCount){
+    if (effCount <= 1) return 0;
+    if (effCount <= 5) return 5000;
+    if (effCount <= 11) return 10000;
+    // 12ヶ月以上
+    const extra = Math.floor((effCount - 12) / 12) * 5000; // 24,36,... で +5,000 ずつ
+    return 15000 + extra;
+  }
+
+  // 寮費テーブル
+  function feeFor(y, m){
+    // 2023年1–6月: 21000
+    if (y === 2023 && m >= 1 && m <= 6) return 21000;
+    // 2023年7–12月 と 2024年1–3月: 19000
+    if ((y === 2023 && m >= 7 && m <= 12) || (y === 2024 && m >= 1 && m <= 3)) return 19000;
+    // 2024年4月以降（2025年、2026年以降も含む）: 17000
+    if (y > 2024 || (y === 2024 && m >= 4)) return 17000;
+    // フォールバック
+    return 17000;
+  }
+
+  function render(){
+    const basisManualEl = /** @type {HTMLInputElement} */(document.getElementById('basisManual'));
+    const basisMonthEl  = /** @type {HTMLInputElement} */(document.getElementById('basisMonth'));
+
+    let refDate = nowJST(); // デフォは自動（今月 JST）
+    if (basisManualEl && basisManualEl.checked && basisMonthEl && basisMonthEl.value){
+      const [by, bm] = basisMonthEl.value.split('-').map(n=> parseInt(n,10));
+      refDate = new Date(by, bm-1, 1);
+    }
+    const basis = { y: refDate.getFullYear(), m: refDate.getMonth()+1 }; // 基準月（今月）までが対象
+    document.getElementById('basis').textContent = `${refDate.getFullYear()}年${refDate.getMonth()+1}月（対象は${ymt(basis.y,basis.m)}まで）`;
+
+    const inp = /** @type {HTMLInputElement} */(document.getElementById('lastPaid'));
+    const v = inp.value; // "YYYY-MM"
+    const explainSimple = document.getElementById('explainSimple');
+    const explainFull = document.getElementById('explainFull');
+    const rawCountEl = document.getElementById('rawCount');
+    const effCountEl = document.getElementById('effCount');
+    const fineEl = document.getElementById('fine');
+    const rangeEl = document.getElementById('range');
+    const feesTotalEl = document.getElementById('feesTotal');
+    const grandTotalEl = document.getElementById('grandTotal');
+
+    explainSimple.innerHTML = '';
+    explainFull.innerHTML = '';
+
+    if (!v){
+      rawCountEl.textContent = '0';
+      effCountEl.textContent = '0';
+      fineEl.textContent = '0';
+      rangeEl.textContent = '—';
+      feesTotalEl.textContent = '0';
+      grandTotalEl.textContent = '0';
+      state.fine = 0; state.fees = 0; state.grand = 0;
+      return;
+    }
+
+    const [Y, M] = v.split('-').map(n=> parseInt(n, 10));
+    const lastPaid = { y: Y, m: M };
+
+    // lastPaid が基準より未来なら滞納なし
+    if (lastPaid.y > basis.y || (lastPaid.y === basis.y && lastPaid.m >= basis.m)){
+      rawCountEl.textContent = '0';
+      effCountEl.textContent = '0';
+      fineEl.textContent = '0';
+      rangeEl.textContent = '滞納なし';
+      feesTotalEl.textContent = '0';
+      grandTotalEl.textContent = '0';
+      state.fine = 0; state.fees = 0; state.grand = 0;
+      return;
+    }
+
+    const months = enumerateMonths(lastPaid, basis);
+    const { rawCount, effCount, reductions } = applySpecialCount(months);
+
+    rawCountEl.textContent = String(rawCount);
+    effCountEl.textContent = String(effCount);
+    rangeEl.textContent = `${ymt(months[0].y, months[0].m)} 〜 ${ymt(months[months.length-1].y, months[months.length-1].m)}`;
+
+    const moneyEl = document.querySelector('.money');
+    const fineChip = document.querySelector('.chip.finechip');
+
+    // compute fees before animation
+    const feesTotal = months.reduce((sum, v) => sum + feeFor(v.y, v.m), 0);
+    const fine = calcFine(effCount);
+
+    animateCount(fineEl, state.fine, fine, 650);
+    animateCount(feesTotalEl, state.fees, feesTotal, 700);
+    animateCount(grandTotalEl, state.grand, feesTotal + fine, 800);
+
+    bump(moneyEl);
+    bump(fineChip);
+
+    state.fine = fine; state.fees = feesTotal; state.grand = feesTotal + fine;
+
+    // かんたん内訳（寮生向け）
+    const simple = [];
+    simple.push(`<li>対象期間: ${ymt(months[0].y, months[0].m)} 〜 ${ymt(months[months.length-1].y, months[months.length-1].m)}</li>`);
+    simple.push(`<li>罰金カウント: <strong>${effCount}か月</strong>${reductions.length ? `（特例 ${reductions.length}件 適用）` : ''}</li>`);
+    // 適用されたテーブル表記
+    let tableNote = '';
+    if (effCount >= 2 && effCount <= 5) tableNote = '（2–5か月 → ¥5,000）';
+    else if (effCount >= 6 && effCount <= 11) tableNote = '（6–11か月 → ¥10,000）';
+    else if (effCount >= 12) {
+      const extraStep = Math.floor((effCount - 12) / 12);
+      tableNote = `（12か月以上 → ¥15,000 ＋ 12か月ごとに¥5,000×${extraStep}）`;
+    }
+    simple.push(`<li>今月の罰金: <strong>¥${fmtMoney(fine)}</strong> ${tableNote}</li>`);
+    simple.push(`<li>合計: <strong>¥${fmtMoney(feesTotal + fine)}</strong>（寮費 ¥${fmtMoney(feesTotal)} + 罰金 ¥${fmtMoney(fine)}）</li>`);
+    explainSimple.innerHTML = simple.join('');
+
+    // さらに詳しく（対象月と各月寮費など）
+    const full = [];
+    full.push(`<li>対象月: ${months.map(v=> `${v.y}-${String(v.m).padStart(2,'0')}`).join(', ')}</li>`);
+    if (reductions.length){
+      for (const r of reductions){ full.push(`<li>特例圧縮: ${r.label}</li>`); }
+    } else {
+      full.push('<li>特例圧縮: なし</li>');
+    }
+    full.push(`<li>カウント(生→特例後): ${rawCount} → <strong>${effCount}</strong></li>`);
+    full.push(`<li>寮費合計: ¥${fmtMoney(feesTotal)}</li>`);
+    full.push(`<li>各月寮費: ${months.map(v => `${v.y}-${String(v.m).padStart(2,'0')} ¥${fmtMoney(feeFor(v.y, v.m))}`).join(', ')}</li>`);
+    explainFull.innerHTML = full.join('');
+  }
+
+  // 基準月（任意指定）UI 初期化
+  const basisManualEl = /** @type {HTMLInputElement} */(document.getElementById('basisManual'));
+  const basisMonthEl  = /** @type {HTMLInputElement} */(document.getElementById('basisMonth'));
+  if (basisMonthEl){
+    const now0 = nowJST();
+    basisMonthEl.value = `${now0.getFullYear()}-${pad2(now0.getMonth()+1)}`;
+  }
+  if (basisManualEl && basisMonthEl){
+    basisManualEl.addEventListener('change', ()=>{
+      basisMonthEl.disabled = !basisManualEl.checked;
+      render();
+    });
+    basisMonthEl.addEventListener('change', render);
+  }
+  // 初期表示
+  const inp = document.getElementById('lastPaid');
+  inp.addEventListener('change', render);
+  render();
+})();
+</script>
+</body>
+</html>
