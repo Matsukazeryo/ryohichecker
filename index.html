@@ -104,7 +104,6 @@
 <body>
   <div class="app">
     <header>
-      <span class="badge">beta</span>
       <h1>寮費チェッカー</h1>
     </header>
 
@@ -152,7 +151,6 @@
       </details>
     </div>
 
-    <footer>© 寮費チェッカー</footer>
   </div>
 
 <script>
@@ -286,7 +284,10 @@
       refDate = new Date(by, bm-1, 1);
     }
     const basis = { y: refDate.getFullYear(), m: refDate.getMonth()+1 }; // 基準月（今月）までが対象
-    document.getElementById('basis').textContent = `${refDate.getFullYear()}年${refDate.getMonth()+1}月（対象は${ymt(basis.y,basis.m)}まで）`;
+    const basisLabel = document.getElementById('basis');
+    if (basisLabel) {
+      basisLabel.textContent = `${refDate.getFullYear()}年${refDate.getMonth()+1}月（対象は${ymt(basis.y,basis.m)}まで）`;
+    }
 
     const inp = /** @type {HTMLInputElement} */(document.getElementById('lastPaid'));
     const v = inp.value; // "YYYY-MM"
