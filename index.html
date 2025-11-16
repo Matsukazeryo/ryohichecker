@@ -369,11 +369,28 @@
     }
 
     const months = enumerateMonths(lastPaid, basis);
-    const { rawCount, effCount, reductions } = applySpecialCount(months);
+    // 罰金カウントに「基準月」は含めない（= 最後の1ヶ月は今月分として扱う）
+    const arrearsMonths = months.slice(0, -1);
+
+    let rawCount = 0;
+    let effCount = 0;
+    let reductions = [];
+
+    if (arrearsMonths.length > 0) {
+      const res = applySpecialCount(arrearsMonths);
+      rawCount = res.rawCount;
+      effCount = res.effCount;
+      reductions = res.reductions;
+      rangeEl.textContent = `${ymt(arrearsMonths[0].y, arrearsMonths[0].m)} 〜 ${ymt(arrearsMonths[arrearsMonths.length - 1].y, arrearsMonths[arrearsMonths.length - 1].m)}`;
+    } else {
+      rawCount = 0;
+      effCount = 0;
+      reductions = [];
+      rangeEl.textContent = '滞納なし';
+    }
 
     rawCountEl.textContent = String(rawCount);
     effCountEl.textContent = String(effCount);
-    rangeEl.textContent = `${ymt(months[0].y, months[0].m)} 〜 ${ymt(months[months.length-1].y, months[months.length-1].m)}`;
 
     const moneyEl = document.querySelector('.money');
     const fineChip = document.querySelector('.chip.finechip');
@@ -393,7 +410,11 @@
 
     // かんたん内訳（寮生向け）
     const simple = [];
-    simple.push(`<li>対象期間: ${ymt(months[0].y, months[0].m)} 〜 ${ymt(months[months.length-1].y, months[months.length-1].m)}</li>`);
+    if (arrearsMonths.length > 0) {
+      simple.push(`<li>対象期間: ${ymt(arrearsMonths[0].y, arrearsMonths[0].m)} 〜 ${ymt(arrearsMonths[arrearsMonths.length - 1].y, arrearsMonths[arrearsMonths.length - 1].m)}</li>`);
+    } else {
+      simple.push('<li>対象期間: なし（今月分のみ未払い）</li>');
+    }
     simple.push(`<li>罰金カウント: <strong>${effCount}か月</strong>${reductions.length ? `（特例 ${reductions.length}件 適用）` : ''}</li>`);
     // 適用されたテーブル表記
     let tableNote = '';
@@ -410,6 +431,11 @@
     // さらに詳しく（対象月と各月寮費など）
     const full = [];
     full.push(`<li>対象月: ${months.map(v=> `${v.y}-${String(v.m).padStart(2,'0')}`).join(', ')}</li>`);
+    if (arrearsMonths.length > 0) {
+      full.push(`<li>罰金カウント対象月: ${arrearsMonths.map(v => `${v.y}-${String(v.m).padStart(2,'0')}`).join(', ')}</li>`);
+    } else {
+      full.push('<li>罰金カウント対象月: なし</li>');
+    }
     if (reductions.length){
       for (const r of reductions){ full.push(`<li>特例圧縮: ${r.label}</li>`); }
     } else {
