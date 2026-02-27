@@ -178,7 +178,7 @@
     <div class="card" style="margin-top:12px">
       <details id="breakdown">
         <summary>詳細（罰金の根拠・対象月）</summary>
-        <div class="muted" style="margin:8px 0 6px">毎年 <strong>3–4月分</strong> と <strong>8–9月分</strong> は <strong>2か月で1カウント</strong>。さらに <strong>2025年5–6月分</strong> も 2か月で1カウント。</div>
+        <div class="muted" style="margin:8px 0 6px">毎年 <strong>2–3月分</strong> と <strong>8–9月分</strong> は <strong>2か月で1カウント</strong>。さらに <strong>2025年5–6月分</strong> も 2か月で1カウント。</div>
         <ul id="explainSimple"></ul>
         <details id="more" style="margin-top:8px">
           <summary>さらに詳しく（対象月一覧・各月寮費）</summary>
@@ -278,10 +278,10 @@
     const set = new Set(months.map(v=> `${v.y}-${v.m}`));
     const reductions = [];
 
-    // 毎年の 3-4 / 8-9
+    // 毎年の 2-3 / 8-9
     const years = [...new Set(months.map(v=> v.y))];
     for (const y of years){
-      if (set.has(`${y}-3`) && set.has(`${y}-4`)) reductions.push({y, pair:[3,4], label:`${y}年3–4月分を「2で1」に圧縮`});
+      if (set.has(`${y}-2`) && set.has(`${y}-3`)) reductions.push({y, pair:[2,3], label:`${y}年2–3月分を「2で1」に圧縮`});
       if (set.has(`${y}-8`) && set.has(`${y}-9`)) reductions.push({y, pair:[8,9], label:`${y}年8–9月分を「2で1」に圧縮`});
     }
     // 2025年5-6のみ特例
