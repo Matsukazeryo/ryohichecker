@@ -1,671 +1,471 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>寮庶務当 割当アプリ</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#f0fdf4" />
+  <title>寮費チェッカー</title>
   <style>
     :root {
-      --primary: #4dabf7;
-      --primary-hover: #3b8dd9;
-      --bg: #f8f9fa;
-      --card-bg: #ffffff;
-      --text: #343a40;
-      --text-muted: #868e96;
-      --border: #dee2e6;
-      --success: #40c057;
-      --danger: #fa5252;
-      --info: #e7f5ff;
+      --bg: #f8fafc;          /* page bg */
+      --card: #ffffff;        /* card bg */
+      --text: #0f172a;        /* slate-900 */
+      --muted: #475569;       /* slate-600 */
+      --accent: #16a34a;      /* green-600 */
+      --accent-2: #3b82f6;    /* blue-500 */
+      --danger: #dc2626;      /* red-600 */
+      --ring: rgba(59,130,246,0.25);
+      --line: rgba(2,6,23,0.08);
     }
-    
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; }
-    
-    header { background-color: var(--card-bg); padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    h1 { font-size: 1.25rem; color: var(--primary); }
-    
-    .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-    .card { background: var(--card-bg); padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
-    
-    h2 { font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
-    h3 { font-size: 1rem; margin: 1.5rem 0 0.5rem; color: var(--text); }
-    
-    button { background-color: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
-    button:hover { background-color: var(--primary-hover); }
-    button.outline { background-color: transparent; border: 1px solid var(--primary); color: var(--primary); }
-    button.outline:hover { background-color: var(--primary); color: white; }
-    button:disabled { background-color: #ccc; cursor: not-allowed; }
-    
-    input[type="datetime-local"], select, textarea, input[type="number"], input[type="password"], input[type="text"] { width: 100%; padding: 0.5rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 4px; font-size: 1rem; }
-    textarea { resize: vertical; min-height: 100px; }
-    
-    .toggle-switch { display: flex; align-items: center; cursor: pointer; }
-    .toggle-switch input { display: none; }
-    .slider { width: 40px; height: 20px; background-color: #ccc; border-radius: 20px; position: relative; transition: 0.3s; margin-left: 10px; }
-    .slider::before { content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%; background-color: white; top: 2px; left: 2px; transition: 0.3s; }
-    input:checked + .slider { background-color: var(--primary); }
-    input:checked + .slider::before { transform: translateX(20px); }
-    
-    .participant-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
-    
-    .step-section { display: none; }
-    .step-section.active { display: block; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    
-    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
-    th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); }
-    th { background-color: var(--bg); font-weight: bold; white-space: nowrap; }
-    .table-container { overflow-x: auto; margin-bottom: 1rem; }
-    
-    .alert { padding: 1rem; background-color: var(--info); color: #1971c2; border-radius: 4px; margin-bottom: 1rem; }
-    .status-box { background-color: #f1f3f5; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; border-left: 4px solid var(--primary); }
-    .highlight-result { background-color: #fff3cd; border-left-color: #ffc107; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", Meiryo, sans-serif;
+      background: linear-gradient(180deg, #ffffff, #f8fafc 40%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      -webkit-text-size-adjust: 100%;
+    }
+    .app {
+      width: min(880px, 100%);
+      background: #ffffff;
+      backdrop-filter: none;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; padding: 20px 20px 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+      position: relative;
+    }
+    header { display:flex; align-items:center; gap:12px; margin-bottom: 16px; }
+    header h1 { font-size: clamp(18px, 2.8vw, 28px); margin: 0; letter-spacing: .02em; }
+    .badge { font-size: 12px; padding: 4px 8px; border-radius: 999px; background: rgba(96,165,250,0.15); color:#cfe3ff; border:1px solid rgba(96,165,250,0.35); }
 
-    /* 管理者タブ用 */
-    .admin-tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
-    .admin-tab { padding: 0.5rem 1rem; cursor: pointer; background: none; color: var(--text-muted); border: none; border-bottom: 2px solid transparent; border-radius: 0; }
-    .admin-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: bold; }
-    .admin-panel { display: none; }
-    .admin-panel.active { display: block; }
-    .password-box { background-color: var(--bg); padding: 1rem; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 1.5rem; }
-    .password-box input { margin-bottom: 0.5rem; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+    .grid { display:grid; gap: 12px; grid-template-columns: 1fr; }
+    @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+    label { font-size: 14px; color: var(--muted); display:block; margin-bottom: 6px; }
+    input[type="month"] {
+      width: 80%;
+      max-width: 260px;
+      min-width: 0;
+      display: block;
+      margin: 0;
+      padding: 12px 12px;
+      font-size: 16px;
+      color: var(--text);
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      outline: none;
+      box-shadow: 0 0 0 3px var(--ring);
+    }
+
+    #lastPaid {
+      border-width: 2px;
+      border-color: var(--accent-2);
+      background: #eff6ff;
+    }
+    input[type="month"]:focus { border-color: var(--accent-2); box-shadow: 0 0 0 4px var(--ring); }
+
+    .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+    .result {
+      display:flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; border-radius: 12px; border:1px solid var(--line);
+      background: linear-gradient(180deg, #ecfdf5, #f0fdf4);
+    }
+    .money { font-size: clamp(22px, 4.2vw, 36px); font-weight: 700; letter-spacing: .02em; position: relative; overflow: hidden; }
+    .money .yen { font-weight: 600; font-size: 0.7em; opacity: .8; margin-right: 2px; }
+    .hero { display:flex; flex-direction:column; gap:8px; }
+    .sub { font-size: 14px; color: var(--muted); }
+    .chip { display:inline-block; padding: 2px 8px; border-radius: 999px; border:1px solid rgba(220,38,38,0.35); background: #fee2e2; }
+    .finechip { border-color: rgba(239,68,68,0.4); }
+    .yen-inline { opacity:.8; margin-right:2px; }
+
+    /* ===== Animations & Effects ===== */
+    @keyframes bump { 0%{ transform:scale(1);} 35%{ transform:scale(1.06);} 100%{ transform:scale(1);} }
+    .money.bump { animation: bump 450ms ease; }
+
+    @keyframes shine { from { left:-120%; } to { left:120%; } }
+    .money.shine::after { content:""; position:absolute; top:0; bottom:0; left:-120%; width:140%; background: linear-gradient(120deg, rgba(255,255,255,0), rgba(255,255,255,0.6) 25%, rgba(255,255,255,0) 50%); animation: shine .8s ease; }
+
+    @keyframes pop { 0%{ transform:scale(.94); } 60%{ transform:scale(1.06);} 100%{ transform:scale(1);} }
+    .chip.pop { animation: pop 380ms ease; }
+
+    /* Details arrow */
+
+    /* Details arrow */
+    details > summary { position:relative; padding-right:18px; }
+    details > summary::after { content:""; position:absolute; right:4px; top:50%; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform: translateY(-50%) rotate(-45deg); transition: transform .2s ease; }
+    details[open] > summary::after { transform: translateY(-50%) rotate(45deg); }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+    .kpi { background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+    .kpi h4 { margin: 0; font-size: 12px; color: var(--muted); font-weight: 500; }
+    .kpi p { margin: 6px 0 0; font-size: 16px; font-weight: 700; }
+
+    details { background: var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+    details > summary { cursor: pointer; font-weight: 600; }
+    details[open] { background: #fff; }
+    ul { margin: 8px 0 0 18px; }
+    .muted { color: var(--muted); }
+    .danger { color: var(--danger); }
     
-    /* ローディング画面 */
-    #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 9999; font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+    @media (max-width: 480px) {
+      body { padding: 12px; }
+      .app { padding: 16px 14px; border-radius: 14px; }
+      header h1 { font-size: 20px; }
+      .result { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .money { font-size: 32px; }
+      input[type="month"] {
+        font-size: 16px;
+        padding: 12px;
+        width: 80%;
+        max-width: 260px;
+      }
+      details > summary { font-size: 14px; }
+      .sub { font-size: 13px; }
+    }
   </style>
 </head>
 <body>
+  <div class="app">
+    <header>
+      <h1>寮費チェッカー</h1>
+    </header>
 
-<div id="loadingOverlay">データベースに接続中...</div>
-
-<header>
-  <h1>寮庶務当 割当</h1>
-  <label class="toggle-switch">
-    <span style="font-size: 0.9rem; font-weight: bold;">管理者モード</span>
-    <input type="checkbox" id="adminToggle" onchange="toggleAdminMode()">
-    <span class="slider"></span>
-  </label>
-</header>
-
-<div class="container" id="studentView">
-  <div id="step1" class="card step-section active">
-    <h2>部屋番号を選択してください</h2>
-    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
-      <select id="studentRoomSelect" style="margin-bottom: 0;"></select>
-      <button onclick="goToStep2()" style="white-space: nowrap;">次へ</button>
-    </div>
-
-    <div id="globalResultsArea" style="display: none; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-      <h2 style="color: var(--primary);">全体の割当結果</h2>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">結果が確定しました。部屋番号を選んで「次へ」を押すと、あなたの個別の結果と提出内容を確認できます。</p>
-      <div class="table-container">
-        <table id="globalResultTable">
-          <thead><tr><th>候補枠</th><th>担当部屋番号</th></tr></thead>
-          <tbody></tbody>
-        </table>
+    <div class="grid">
+      <div class="card">
+        <label for="lastPaid">最後に払った「月分」<span class="muted" style="font-weight:400"></span></label>
+        <input id="lastPaid" type="month" placeholder="例: 2025-07" title="最後に払った『月分』（例：2025-07）" />
+        <div class="hint">例：<code>2025-07</code>（7月分まで払った場合）。上の青い枠をタップして最後に払った「月分」を選んでください。</div>
+        <div class="hint" style="margin-top:10px">
+          <label style="display:block;color:var(--muted);font-size:12px;margin-bottom:4px;">基準月（自動）</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="basisMonth" type="month" disabled />
+            <label style="font-size:12px;"><input type="checkbox" id="basisManual"/> 手動設定</label>
+          </div>
+          <div class="hint">未チェックなら日本時間で今月を自動取得。</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="result">
+          <div class="hero">
+            <div class="muted">次に払う総額</div>
+            <div class="money"><span class="yen">¥</span><span id="grandTotal">0</span></div>
+            <div class="sub">内訳：寮費 <span class="yen-inline">¥</span><span id="feesTotal">0</span> ＋ <span class="chip finechip">罰金 <span class="yen-inline">¥</span><span id="fine">0</span></span></div>
+          </div>
+          <div class="kpis" style="display:none">
+            <div class="kpi"><h4>滞納(生)</h4><p id="rawCount">0</p></div>
+            <div class="kpi"><h4>特殊後</h4><p id="effCount">0</p></div>
+            <div class="kpi"><h4>対象期間</h4><p id="range">—</p></div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <div class="card" style="margin-top:12px">
+      <details id="breakdown">
+        <summary>詳細（罰金の根拠・対象月）</summary>
+        <div class="muted" style="margin:8px 0 6px">毎年 <strong>2–3月分</strong> と <strong>8–9月分</strong> は <strong>2か月で1カウント</strong>。さらに <strong>2025年5–6月分</strong> も 2か月で1カウント。</div>
+        <ul id="explainSimple"></ul>
+        <details id="more" style="margin-top:8px">
+          <summary>さらに詳しく（対象月一覧・各月寮費）</summary>
+          <ul id="explainFull" style="margin-top:6px"></ul>
+        </details>
+        <div class="muted" style="margin-top:8px">
+          罰金テーブル: <strong>2–5か月 → ¥5,000</strong> / <strong>6–11か月 → ¥10,000</strong> / <strong>12か月以上 → ¥15,000</strong>（以降12か月ごとに +¥5,000）。
+        </div>
+      </details>
+    </div>
+
   </div>
 
-  <div id="step2" class="card step-section">
-    <h2>部屋：<span id="currentRoomDisplay" style="color: var(--primary);"></span></h2>
-    
-    <div id="submissionArea">
-      <div id="currentStatusArea" class="status-box" style="display: none;"></div>
-      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-        第1〜第5希望まで選べます（すべて埋めなくても構いません）。<br>
-        ※締切前なら何度でも再提出（上書き）可能です。
-      </p>
-      <div id="requestSelectors"></div>
-      <div style="margin-top: 1.5rem;">
-        <button id="submitBtn" onclick="submitRequest()">提出する</button>
-      </div>
-      <h3 style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1rem;">現在の候補枠ごとの希望人数（リアルタイム更新）</h3>
-      <div class="table-container">
-        <table id="slotStatsTable">
-          <thead><tr><th>候補枠</th><th>第1</th><th>第2</th><th>第3</th><th>第4</th><th>第5</th><th>計</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
+<script>
+(function(){
+  const fmtMoney = (n)=> n.toLocaleString('ja-JP');
+  const ymt = (y,m)=> `${y}年${m}月`;
+  const pad2 = (n)=> String(n).padStart(2, '0');
 
-    <div id="personalResultArea" style="display: none;">
-      <div class="status-box highlight-result" id="personalResultBox"></div>
-    </div>
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-      <button class="outline" onclick="goToStep1()">← 最初の画面に戻る</button>
-    </div>
-  </div>
-</div>
-
-<div class="container" id="adminView" style="display: none;">
-  <div class="card">
-    <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchAdminTab('tab-settings')">設定</button>
-      <button class="admin-tab" onclick="switchAdminTab('tab-participants')">参加フラグ</button>
-      <button class="admin-tab" onclick="switchAdminTab('tab-data')">名簿・枠</button>
-      <button class="admin-tab" onclick="switchAdminTab('tab-requests')">希望状況</button>
-      <button class="admin-tab" onclick="switchAdminTab('tab-lottery')">抽選・結果</button>
-    </div>
-
-    <div id="tab-settings" class="admin-panel active">
-      <h2>基本設定</h2>
-      <label>管理者パスワードの変更</label>
-      <div class="password-box">
-        <input type="password" id="currentAdminPassword" placeholder="現在のパスワード">
-        <input type="password" id="newAdminPassword" placeholder="新しいパスワード">
-        <input type="password" id="confirmAdminPassword" placeholder="新しいパスワード（確認用）">
-        <button onclick="changeAdminPassword()" style="margin-top: 0.5rem;">パスワードを変更する</button>
-      </div>
-      <label>締切日時</label>
-      <input type="datetime-local" id="adminDeadline" onchange="saveAdminSettings()">
-      <label>開始ポインタ（今回抽選を開始する部屋番号のインデックス: 0〜）</label>
-      <input type="number" id="adminPointer" min="0" onchange="saveAdminSettings()">
-    </div>
-
-    <div id="tab-participants" class="admin-panel">
-      <h2>今回参加フラグの設定</h2>
-      <div style="margin-bottom: 1rem;">
-        <button class="outline" onclick="setAllParticipants(true)">全てON</button>
-        <button class="outline" onclick="setAllParticipants(false)">全てOFF</button>
-      </div>
-      <div id="participantListAdmin" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); padding: 1rem; border-radius: 4px;"></div>
-    </div>
-
-    <div id="tab-data" class="admin-panel">
-      <h2>部屋番号一覧の編集</h2>
-      <textarea id="adminRooms"></textarea>
-      <h2>候補日（候補枠）一覧の編集</h2>
-      <textarea id="adminSlots"></textarea>
-      <button onclick="saveLists()">一覧を保存する</button>
-    </div>
-
-    <div id="tab-requests" class="admin-panel">
-      <h2>現在の希望状況確認 (リアルタイム)</h2>
-      <h3>部屋別の希望一覧</h3>
-      <div class="table-container" style="max-height: 300px; overflow-y: auto;">
-        <table id="adminRoomRequestsTable">
-          <thead><tr><th>部屋</th><th>参加フラグ</th><th>第1</th><th>第2</th><th>第3</th><th>第4</th><th>第5</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <h3>候補日別の希望者一覧</h3>
-      <div class="table-container" style="max-height: 300px; overflow-y: auto;">
-        <table id="adminSlotRequestsTable">
-          <thead><tr><th>候補枠</th><th>第1希望</th><th>第2希望</th><th>第3希望</th><th>第4希望</th><th>第5希望</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="tab-lottery" class="admin-panel">
-      <h2>抽選の実行</h2>
-      <button onclick="runLottery()" style="margin-bottom: 1.5rem;">抽選を実行する</button>
-      <h2>割当結果・手動修正</h2>
-      <div class="table-container" style="margin-bottom: 1rem;">
-        <table id="resultTableAdmin">
-          <thead><tr><th>候補枠</th><th>担当部屋番号 (手動修正)</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <button onclick="exportCSV()">CSV出力</button>
-    </div>
-  </div>
-</div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-  // 提供されたFirebase設定
-  const firebaseConfig = {
-    apiKey: "AIzaSyD-D3EZuvFWKW6cfiOK4v0vdz8aH0Yp7tY",
-    authDomain: "dormitory-app-syomu.firebaseapp.com",
-    projectId: "dormitory-app-syomu",
-    storageBucket: "dormitory-app-syomu.firebasestorage.app",
-    messagingSenderId: "451503282681",
-    appId: "1:451503282681:web:b6bee0fcb9eaa1c2054528"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const firestore = getFirestore(app);
-  const dbRef = doc(firestore, "settings", "mainData"); // データを保存する場所
-
-  const initialRooms = ["113","201","206","207","210","216","218","219","220","221","224","225","226","227","228","230","302","303","304","305","308","314","316","318","322","325","326","327","328","329","330","401","402","408","412","418","420","421","423","425","426","428","429","430","501","504","505","508","510","513","514","515","516","519","520","521","522","523","524","525","526","527"];
-  const initialSlots = ["2025年6月23日(月)","2025年6月24日(火)","2025年6月25日(水)","2025年6月26日(木)","2025年6月27日(金)","2025年6月29日(日)朝","2025年6月29日(日)昼","2025年6月29日(日)夜","2025年6月30日(月)","2025年7月1日(火)","2025年7月2日(水)","2025年7月3日(木)","2025年7月4日(金)","2025年7月6日(日)朝","2025年7月6日(日)昼","2025年7月6日(日)夜","2025年7月7日(月)"];
-
-  let db = { rooms: [], slots: [], participants: {}, deadline: "", startPointer: 0, assignments: {}, adminPassword: "admin" };
-  let currentStudentRoom = "";
-
-  // アプリ起動時のデータ読み込み
-  window.onload = async () => {
+  // ==== Sound policy: no audio output ====
+  (function enforceNoSound(){
     try {
-      const docSnap = await getDoc(dbRef);
-      if (!docSnap.exists()) {
-        // 初回起動：Firestoreにデータがない場合は初期データを作成
-        db.rooms = [...initialRooms];
-        db.slots = [...initialSlots];
-        db.rooms.forEach(r => db.participants[r] = { isParticipating: true, requests: [] });
-        await setDoc(dbRef, db);
-      } else {
-        db = docSnap.data();
-      }
-      
-      // リアルタイムリスナーの登録（データが更新されるたびに呼ばれる）
-      onSnapshot(dbRef, (snapshot) => {
-        if (snapshot.exists()) {
-          db = snapshot.data();
-          if (!db.adminPassword) db.adminPassword = "admin";
-          
-          // 開いている画面に合わせてUIを自動更新
-          const isAdminMode = document.getElementById('adminToggle').checked;
-          if (isAdminMode) {
-            if (document.getElementById('tab-requests').classList.contains('active')) renderAdminRequests();
-            if (document.getElementById('tab-participants').classList.contains('active')) loadAdminData(); // 簡易更新
-          } else {
-            if (document.getElementById('step1').classList.contains('active')) {
-              renderStudentView();
-            } else if (document.getElementById('step2').classList.contains('active')) {
-              renderSlotStatsTable(); // 混み具合をリアルタイム更新
+      const muteAll = (root=document)=>{
+        root.querySelectorAll && root.querySelectorAll('audio, video').forEach(el => {
+          try {
+            el.muted = true;
+            el.pause && el.pause();
+            el.removeAttribute && el.removeAttribute('autoplay');
+          } catch(_){}
+        });
+      };
+      // Mute anything currently in the DOM
+      muteAll(document);
+      // Also mute anything added later
+      const mo = new MutationObserver(muts => {
+        for (const m of muts){
+          for (const n of m.addedNodes){
+            if (!(n instanceof HTMLElement)) continue;
+            if (n.matches && (n.matches('audio') || n.matches('video'))){
+              try { n.muted = true; n.pause && n.pause(); n.removeAttribute && n.removeAttribute('autoplay'); } catch(_){}
             }
+            // Nested
+            muteAll(n);
           }
         }
       });
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+    } catch(_){}
+  })();
 
-      document.getElementById('loadingOverlay').style.display = 'none';
-      renderStudentView();
-    } catch (error) {
-      alert("データベースの接続に失敗しました。ページをリロードしてください。\n" + error);
+  // Count-up animation for numbers with commas
+  function animateCount(el, from, to, duration=700){
+    if (prefersReduced) { el.textContent = fmtMoney(to); return; }
+    const start = performance.now();
+    const step = (now)=>{
+      const p = Math.min(1, (now - start) / duration);
+      const val = Math.round(from + (to - from) * (1 - Math.pow(1-p, 3))); // easeOutCubic
+      el.textContent = fmtMoney(val);
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  function bump(el){ if(!el) return; el.classList.remove('bump','shine'); void el.offsetWidth; el.classList.add('bump','shine'); setTimeout(()=>{ el.classList.remove('bump','shine'); }, 900); }
+
+
+  const state = { fine: 0, fees: 0, grand: 0 };
+
+  // 現在(日本時間)を取得
+  const nowJST = ()=> new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+
+  // 前月(支払い対象の上限)を返す
+  function prevYearMonth(d){
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1; // 1-12
+    if (m === 1) return {y: y-1, m: 12};
+    return {y, m: m-1};
+  }
+
+  // start(含まず)→end(含む) の月配列を作る
+  function enumerateMonths(start, end){
+    const out = [];
+    let y = start.y, m = start.m;
+    // 1つ進めてから push
+    do {
+      m += 1;
+      if (m === 13) { y++; m = 1; }
+      out.push({y, m});
+    } while (y < end.y || (y === end.y && m < end.m));
+    return out;
+  }
+
+  // 特殊カウントを適用
+  function applySpecialCount(months){
+    const set = new Set(months.map(v=> `${v.y}-${v.m}`));
+    const reductions = [];
+
+    // 毎年の 2-3 / 8-9
+    const years = [...new Set(months.map(v=> v.y))];
+    for (const y of years){
+      if (set.has(`${y}-2`) && set.has(`${y}-3`)) reductions.push({y, pair:[2,3], label:`${y}年2–3月分を「2で1」に圧縮`});
+      if (set.has(`${y}-8`) && set.has(`${y}-9`)) reductions.push({y, pair:[8,9], label:`${y}年8–9月分を「2で1」に圧縮`});
     }
-  };
+    // 2025年5-6のみ特例
+    if (set.has(`2025-5`) && set.has(`2025-6`)) reductions.push({y:2025, pair:[5,6], label:`2025年5–6月分を「2で1」に圧縮`});
 
-  // Firebaseへの保存関数
-  async function saveData() {
-    try {
-      await setDoc(dbRef, db);
-    } catch(e) {
-      alert("データの保存に失敗しました: " + e.message);
+    const raw = months.length;
+    const eff = Math.max(0, raw - reductions.length); // 2か月→1か月 なので 1 減らす
+    return { rawCount: raw, effCount: eff, reductions };
+  }
+
+  function calcFine(effCount){
+    if (effCount <= 1) return 0;
+    if (effCount <= 5) return 5000;
+    if (effCount <= 11) return 10000;
+    // 12ヶ月以上
+    const extra = Math.floor((effCount - 12) / 12) * 5000; // 24,36,... で +5,000 ずつ
+    return 15000 + extra;
+  }
+
+  // 寮費テーブル
+  function feeFor(y, m){
+    // 2023年1–6月: 21000
+    if (y === 2023 && m >= 1 && m <= 6) return 21000;
+    // 2023年7–12月 と 2024年1–3月: 19000
+    if ((y === 2023 && m >= 7 && m <= 12) || (y === 2024 && m >= 1 && m <= 3)) return 19000;
+    // 2024年4月以降（2025年、2026年以降も含む）: 17000
+    if (y > 2024 || (y === 2024 && m >= 4)) return 17000;
+    // フォールバック
+    return 17000;
+  }
+
+  function render(){
+    const basisManualEl = /** @type {HTMLInputElement} */(document.getElementById('basisManual'));
+    const basisMonthEl  = /** @type {HTMLInputElement} */(document.getElementById('basisMonth'));
+
+    let refDate = nowJST(); // デフォは自動（今月 JST）
+    if (basisManualEl && basisManualEl.checked && basisMonthEl && basisMonthEl.value){
+      const [by, bm] = basisMonthEl.value.split('-').map(n=> parseInt(n,10));
+      refDate = new Date(by, bm-1, 1);
     }
-  }
-
-  // --- 以降、HTMLから呼び出せるように window オブジェクトに関数を紐付け ---
-
-  window.isDeadlinePassed = function() { return db.deadline && new Date() > new Date(db.deadline); }
-  window.isResultFinalized = function() { return window.isDeadlinePassed() || Object.keys(db.assignments).length > 0; }
-
-  window.getSlotStats = function(slotName) {
-    let stats = [0, 0, 0, 0, 0];
-    Object.values(db.participants).forEach(p => {
-      if (p.isParticipating && p.requests) {
-        const idx = p.requests.indexOf(slotName);
-        if (idx !== -1 && idx < 5) stats[idx]++;
-      }
-    });
-    return stats;
-  }
-
-  window.renderStudentView = function() {
-    const select = document.getElementById('studentRoomSelect');
-    // 現在の選択を保持
-    const currentVal = select.value;
-    select.innerHTML = '<option value="">-- 選択してください --</option>';
-    db.rooms.forEach(r => {
-      const opt = new Option(r, r);
-      if(r === currentVal) opt.selected = true;
-      select.appendChild(opt);
-    });
-    
-    if (window.isResultFinalized()) {
-      document.getElementById('globalResultsArea').style.display = 'block';
-      const tbody = document.querySelector('#globalResultTable tbody');
-      tbody.innerHTML = '';
-      db.slots.forEach(slot => {
-        const assigned = db.assignments[slot] || '未定';
-        tbody.innerHTML += `<tr><td>${slot}</td><td><strong>${assigned}</strong></td></tr>`;
-      });
-    } else {
-      document.getElementById('globalResultsArea').style.display = 'none';
-    }
-  }
-
-  window.goToStep1 = function() {
-    document.getElementById('step1').classList.add('active');
-    document.getElementById('step2').classList.remove('active');
-    currentStudentRoom = "";
-    window.renderStudentView();
-    // ボタン状態をリセット
-    const btn = document.getElementById('submitBtn');
-    if (btn) { btn.disabled = false; btn.textContent = "提出する"; }
-  }
-
-  window.goToStep2 = function() {
-    const room = document.getElementById('studentRoomSelect').value;
-    if (!room) { alert("部屋番号を選択してください。"); return; }
-    currentStudentRoom = room;
-    document.getElementById('currentRoomDisplay').textContent = room;
-    
-    const currentReqs = db.participants[room]?.requests || [];
-    const isParticipating = db.participants[room]?.isParticipating ?? true;
-    
-    if (window.isResultFinalized()) {
-      document.getElementById('submissionArea').style.display = 'none';
-      document.getElementById('personalResultArea').style.display = 'block';
-
-      let assignedSlots = [];
-      for (let slot in db.assignments) {
-        if (db.assignments[slot] === room) assignedSlots.push(slot);
-      }
-      
-      let html = `<h3 style="margin-top:0; color:var(--text);">あなたの割当結果</h3>`;
-      if (assignedSlots.length > 0) {
-        html += `<p style="font-size:1.3rem; font-weight:bold; color:var(--danger); margin-bottom:1rem;">👉 決定枠：<br>${assignedSlots.join('<br>')}</p>`;
-        if (assignedSlots.length >= 2) {
-          html += `<div class="alert" style="margin-bottom:1rem;">※候補枠数と参加人数の都合により、今回は <strong>${assignedSlots.length}回</strong> 割り当てられています。</div>`;
-        }
-      } else {
-        html += `<p style="font-size:1.1rem; font-weight:bold; margin-bottom:1rem;">👉 今回の割当はありませんでした（または未定）</p>`;
-      }
-      
-      html += `<strong>【あなたが提出していた希望】</strong><br>`;
-      if (currentReqs.length > 0) {
-        for(let i=0; i<5; i++) {
-          let req = currentReqs[i];
-          let matchText = (req && assignedSlots.includes(req)) ? ' <span style="color:var(--danger); font-weight:bold;">(決定！)</span>' : '';
-          html += `第${i+1}希望: ${req || 'なし'}${matchText}<br>`;
-        }
-      } else {
-        html += `希望の提出はありませんでした。<br>`;
-      }
-      document.getElementById('personalResultBox').innerHTML = html;
-
-    } else {
-      if (!isParticipating) {
-        // 参加フラグOFFの人は希望を出せない
-        document.getElementById('submissionArea').style.display = 'block';
-        document.getElementById('personalResultArea').style.display = 'none';
-
-        const statusArea = document.getElementById('currentStatusArea');
-        statusArea.innerHTML = `<strong>【参加フラグ：OFF】</strong><br>今回は参加しない設定のため、希望の提出はできません。`;
-        statusArea.style.display = 'block';
-
-        // 希望入力UIを無効化
-        const container = document.getElementById('requestSelectors');
-        container.innerHTML = '';
-        for (let i = 1; i <= 5; i++) {
-          const wrap = document.createElement('div');
-          wrap.innerHTML = `<label>第${i}希望</label><select id="req${i}" disabled><option value="">-- 希望なし --</option></select>`;
-          container.appendChild(wrap);
-          const sel = document.getElementById(`req${i}`);
-          db.slots.forEach(slot => sel.appendChild(new Option(slot, slot)));
-        }
-
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.textContent = "提出不可";
-
-        window.renderSlotStatsTable();
-
-        document.getElementById('step1').classList.remove('active');
-        document.getElementById('step2').classList.add('active');
-        return;
-      }
-      document.getElementById('submissionArea').style.display = 'block';
-      document.getElementById('personalResultArea').style.display = 'none';
-
-      const statusArea = document.getElementById('currentStatusArea');
-      if (currentReqs.length > 0) {
-        let reqText = "<strong>【現在の提出内容】</strong><br>";
-        for(let i=0; i<5; i++) reqText += `第${i+1}希望: ${currentReqs[i] || 'なし'}<br>`;
-        statusArea.innerHTML = reqText;
-        statusArea.style.display = 'block';
-      } else {
-        statusArea.style.display = 'none';
-      }
-
-      const container = document.getElementById('requestSelectors');
-      container.innerHTML = '';
-      for (let i = 1; i <= 5; i++) {
-        const wrap = document.createElement('div');
-        wrap.innerHTML = `<label>第${i}希望</label><select id="req${i}"><option value="">-- 希望なし --</option></select>`;
-        container.appendChild(wrap);
-        const sel = document.getElementById(`req${i}`);
-        db.slots.forEach(slot => sel.appendChild(new Option(slot, slot)));
-        if (currentReqs[i-1]) sel.value = currentReqs[i-1];
-      }
-      
-      window.renderSlotStatsTable();
+    const basis = { y: refDate.getFullYear(), m: refDate.getMonth()+1 }; // 基準月（今月）までが対象
+    const basisLabel = document.getElementById('basis');
+    if (basisLabel) {
+      basisLabel.textContent = `${refDate.getFullYear()}年${refDate.getMonth()+1}月（対象は${ymt(basis.y,basis.m)}まで）`;
     }
 
-    document.getElementById('step1').classList.remove('active');
-    document.getElementById('step2').classList.add('active');
-  }
+    const inp = /** @type {HTMLInputElement} */(document.getElementById('lastPaid'));
+    const v = inp.value; // "YYYY-MM"
+    const explainSimple = document.getElementById('explainSimple');
+    const explainFull = document.getElementById('explainFull');
+    const rawCountEl = document.getElementById('rawCount');
+    const effCountEl = document.getElementById('effCount');
+    const fineEl = document.getElementById('fine');
+    const rangeEl = document.getElementById('range');
+    const feesTotalEl = document.getElementById('feesTotal');
+    const grandTotalEl = document.getElementById('grandTotal');
 
-  window.renderSlotStatsTable = function() {
-    const tbody = document.querySelector('#slotStatsTable tbody');
-    if(!tbody) return;
-    tbody.innerHTML = '';
-    db.slots.forEach(slot => {
-      const stats = window.getSlotStats(slot);
-      const total = stats.reduce((sum, val) => sum + val, 0);
-      tbody.innerHTML += `<tr><td>${slot}</td><td>${stats[0]}</td><td>${stats[1]}</td><td>${stats[2]}</td><td>${stats[3]}</td><td>${stats[4]}</td><td><strong>${total}</strong></td></tr>`;
-    });
-  }
+    explainSimple.innerHTML = '';
+    explainFull.innerHTML = '';
 
-  window.submitRequest = async function() {
-    if (!(db.participants[currentStudentRoom]?.isParticipating ?? true)) {
-      alert("参加フラグがOFFのため、希望を提出できません。");
+    if (!v){
+      rawCountEl.textContent = '0';
+      effCountEl.textContent = '0';
+      fineEl.textContent = '0';
+      rangeEl.textContent = '—';
+      feesTotalEl.textContent = '0';
+      grandTotalEl.textContent = '0';
+      state.fine = 0; state.fees = 0; state.grand = 0;
       return;
     }
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.textContent = "送信中...";
 
-    const reqs = [];
-    for (let i = 1; i <= 5; i++) {
-      const val = document.getElementById(`req${i}`).value;
-      if (val) {
-        if (reqs.includes(val)) { 
-          alert("希望枠に重複があります。別々の枠を選んでください。"); 
-          btn.disabled = false; btn.textContent = "提出する";
-          return; 
-        }
-        reqs.push(val);
-      }
+    const [Y, M] = v.split('-').map(n=> parseInt(n, 10));
+    const lastPaid = { y: Y, m: M };
+
+    // lastPaid が基準より未来なら滞納なし
+    if (lastPaid.y > basis.y || (lastPaid.y === basis.y && lastPaid.m >= basis.m)){
+      rawCountEl.textContent = '0';
+      effCountEl.textContent = '0';
+      fineEl.textContent = '0';
+      rangeEl.textContent = '滞納なし';
+      feesTotalEl.textContent = '0';
+      grandTotalEl.textContent = '0';
+      state.fine = 0; state.fees = 0; state.grand = 0;
+      return;
     }
-    if (!db.participants[currentStudentRoom]) db.participants[currentStudentRoom] = { isParticipating: true, requests: [] };
-    db.participants[currentStudentRoom].requests = reqs;
-    
-    await saveData();
-    
-    alert("希望を提出しました！");
-    btn.disabled = false; btn.textContent = "提出する";
-    window.goToStep1();
-  }
 
-  window.toggleAdminMode = function() {
-    const toggleBtn = document.getElementById('adminToggle');
-    const isAdmin = toggleBtn.checked;
-    
-    if (isAdmin) {
-      const inputPass = prompt("管理者パスワードを入力してください:\n(初期パスワード: admin)");
-      if (inputPass === db.adminPassword) {
-        document.getElementById('studentView').style.display = 'none';
-        document.getElementById('adminView').style.display = 'block';
-        window.loadAdminData();
-      } else {
-        alert("パスワードが違います。");
-        toggleBtn.checked = false;
-      }
+    const months = enumerateMonths(lastPaid, basis);
+    // 罰金カウントに「基準月」は含めない（= 最後の1ヶ月は今月分として扱う）
+    const arrearsMonths = months.slice(0, -1);
+
+    let rawCount = 0;
+    let effCount = 0;
+    let reductions = [];
+
+    if (arrearsMonths.length > 0) {
+      const res = applySpecialCount(arrearsMonths);
+      rawCount = res.rawCount;
+      effCount = res.effCount;
+      reductions = res.reductions;
+      rangeEl.textContent = `${ymt(arrearsMonths[0].y, arrearsMonths[0].m)} 〜 ${ymt(arrearsMonths[arrearsMonths.length - 1].y, arrearsMonths[arrearsMonths.length - 1].m)}`;
     } else {
-      document.getElementById('studentView').style.display = 'block';
-      document.getElementById('adminView').style.display = 'none';
-      window.renderStudentView();
+      rawCount = 0;
+      effCount = 0;
+      reductions = [];
+      rangeEl.textContent = '滞納なし';
     }
-  }
 
-  window.changeAdminPassword = async function() {
-    const currentPass = document.getElementById('currentAdminPassword').value;
-    const newPass = document.getElementById('newAdminPassword').value;
-    const confirmPass = document.getElementById('confirmAdminPassword').value;
+    rawCountEl.textContent = String(rawCount);
+    effCountEl.textContent = String(effCount);
 
-    if (!currentPass || !newPass || !confirmPass) { alert("すべての項目を入力してください。"); return; }
-    if (currentPass !== db.adminPassword) { alert("現在のパスワードが間違っています。"); return; }
-    if (newPass !== confirmPass) { alert("新しいパスワードと確認用パスワードが一致しません。"); return; }
-    
-    if (confirm("パスワードを変更しますか？")) {
-      db.adminPassword = newPass;
-      await saveData();
-      alert("管理者パスワードを変更しました。");
-      document.getElementById('currentAdminPassword').value = '';
-      document.getElementById('newAdminPassword').value = '';
-      document.getElementById('confirmAdminPassword').value = '';
+    const moneyEl = document.querySelector('.money');
+    const fineChip = document.querySelector('.chip.finechip');
+
+    // compute fees before animation
+    const feesTotal = months.reduce((sum, v) => sum + feeFor(v.y, v.m), 0);
+    const fine = calcFine(effCount);
+
+    animateCount(fineEl, state.fine, fine, 650);
+    animateCount(feesTotalEl, state.fees, feesTotal, 700);
+    animateCount(grandTotalEl, state.grand, feesTotal + fine, 800);
+
+    bump(moneyEl);
+    bump(fineChip);
+
+    state.fine = fine; state.fees = feesTotal; state.grand = feesTotal + fine;
+
+    // かんたん内訳（寮生向け）
+    const simple = [];
+    if (arrearsMonths.length > 0) {
+      simple.push(`<li>対象期間: ${ymt(arrearsMonths[0].y, arrearsMonths[0].m)} 〜 ${ymt(arrearsMonths[arrearsMonths.length - 1].y, arrearsMonths[arrearsMonths.length - 1].m)}</li>`);
+    } else {
+      simple.push('<li>対象期間: なし（今月分のみ未払い）</li>');
     }
-  }
-
-  window.switchAdminTab = function(tabId) {
-    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-    document.querySelector(`button[onclick="switchAdminTab('${tabId}')"]`).classList.add('active');
-    document.getElementById(tabId).classList.add('active');
-    if (tabId === 'tab-requests') window.renderAdminRequests();
-  }
-
-  window.loadAdminData = function() {
-    document.getElementById('adminDeadline').value = db.deadline || "";
-    document.getElementById('adminPointer').value = db.startPointer || 0;
-    document.getElementById('adminRooms').value = db.rooms.join('\n');
-    document.getElementById('adminSlots').value = db.slots.join('\n');
-    
-    const pList = document.getElementById('participantListAdmin');
-    pList.innerHTML = '';
-    db.rooms.forEach(r => {
-      const isPart = db.participants[r]?.isParticipating ?? true;
-      pList.innerHTML += `<div class="participant-row"><span>部屋 ${r}</span><label class="toggle-switch"><input type="checkbox" onchange="toggleParticipant('${r}', this.checked)" ${isPart ? 'checked' : ''}><span class="slider"></span></label></div>`;
-    });
-    window.renderAdminResultTable();
-    window.renderAdminRequests();
-  }
-
-  window.renderAdminRequests = function() {
-    const roomTbody = document.querySelector('#adminRoomRequestsTable tbody');
-    roomTbody.innerHTML = '';
-    db.rooms.forEach(r => {
-      const p = db.participants[r] || { isParticipating: true, requests: [] };
-      const reqs = p.requests;
-      roomTbody.innerHTML += `<tr><td>${r}</td><td>${p.isParticipating ? 'ON' : 'OFF'}</td><td>${reqs[0] || '-'}</td><td>${reqs[1] || '-'}</td><td>${reqs[2] || '-'}</td><td>${reqs[3] || '-'}</td><td>${reqs[4] || '-'}</td></tr>`;
-    });
-
-    const slotTbody = document.querySelector('#adminSlotRequestsTable tbody');
-    slotTbody.innerHTML = '';
-    db.slots.forEach(slot => {
-      let reqRooms = [[], [], [], [], []];
-      db.rooms.forEach(r => {
-        const p = db.participants[r];
-        if (p && p.isParticipating && p.requests) {
-          const idx = p.requests.indexOf(slot);
-          if (idx !== -1 && idx < 5) reqRooms[idx].push(r);
-        }
-      });
-      slotTbody.innerHTML += `<tr><td>${slot}</td><td>${reqRooms[0].join(', ') || '-'}</td><td>${reqRooms[1].join(', ') || '-'}</td><td>${reqRooms[2].join(', ') || '-'}</td><td>${reqRooms[3].join(', ') || '-'}</td><td>${reqRooms[4].join(', ') || '-'}</td></tr>`;
-    });
-  }
-
-  window.saveAdminSettings = function() {
-    db.deadline = document.getElementById('adminDeadline').value;
-    db.startPointer = parseInt(document.getElementById('adminPointer').value) || 0;
-    saveData(); 
-  }
-
-  window.saveLists = async function() {
-    db.rooms = document.getElementById('adminRooms').value.split('\n').map(s => s.trim()).filter(s => s);
-    db.slots = document.getElementById('adminSlots').value.split('\n').map(s => s.trim()).filter(s => s);
-    
-    // 新しい部屋が追加された場合の初期化
-    db.rooms.forEach(r => {
-      if (!db.participants[r]) db.participants[r] = { isParticipating: true, requests: [] };
-    });
-    
-    await saveData(); 
-    window.loadAdminData(); 
-    alert("更新しました。");
-  }
-
-  window.toggleParticipant = function(room, val) {
-    if (!db.participants[room]) db.participants[room] = { requests: [] };
-    db.participants[room].isParticipating = val; 
-    saveData();
-  }
-
-  window.setAllParticipants = async function(val) {
-    db.rooms.forEach(r => { db.participants[r].isParticipating = val; });
-    await saveData(); 
-    window.loadAdminData();
-  }
-
-  // 手動修正をクラウドに保存する関数
-  window.updateAdminAssignment = function(slot, val) {
-    db.assignments[slot] = val;
-    saveData();
-  }
-
-  window.renderAdminResultTable = function() {
-    const tbody = document.querySelector('#resultTableAdmin tbody');
-    tbody.innerHTML = '';
-    db.slots.forEach(slot => {
-      let selectHTML = `<select onchange="updateAdminAssignment('${slot}', this.value)"><option value="">-- 未定 --</option>`;
-      db.rooms.forEach(r => { selectHTML += `<option value="${r}" ${db.assignments[slot] === r ? 'selected' : ''}>${r}</option>`; });
-      tbody.innerHTML += `<tr><td>${slot}</td><td>${selectHTML}</select></td></tr>`;
-    });
-  }
-
-  window.runLottery = async function() {
-    if (!confirm("抽選を実行しますか？")) return;
-    const activeRooms = db.rooms.filter(r => db.participants[r]?.isParticipating);
-    if (!activeRooms.length || !db.slots.length) return alert("参加者または候補枠がありません。");
-
-    let targetQueue = [];
-    let P = activeRooms.length, S = db.slots.length;
-    let currentPtr = db.startPointer % P;
-    for (let i = 0; i < S; i++) targetQueue.push(activeRooms[(currentPtr + i) % P]);
-    
-    db.startPointer = (currentPtr + S) % P;
-    document.getElementById('adminPointer').value = db.startPointer;
-
-    db.assignments = {};
-    let availableSlots = [...db.slots];
-    const shuffle = (a) => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
-
-    for (let rank = 0; rank < 5; rank++) {
-      let unassigned = [];
-      shuffle(targetQueue).forEach(room => {
-        const desired = (db.participants[room]?.requests || [])[rank];
-        if (desired && availableSlots.includes(desired)) {
-          db.assignments[desired] = room;
-          availableSlots = availableSlots.filter(s => s !== desired);
-        } else unassigned.push(room);
-      });
-      targetQueue = unassigned;
+    simple.push(`<li>罰金カウント: <strong>${effCount}か月</strong>${reductions.length ? `（特例 ${reductions.length}件 適用）` : ''}</li>`);
+    // 適用されたテーブル表記
+    let tableNote = '';
+    if (effCount >= 2 && effCount <= 5) tableNote = '（2–5か月 → ¥5,000）';
+    else if (effCount >= 6 && effCount <= 11) tableNote = '（6–11か月 → ¥10,000）';
+    else if (effCount >= 12) {
+      const extraStep = Math.floor((effCount - 12) / 12);
+      tableNote = `（12か月以上 → ¥15,000 ＋ 12か月ごとに¥5,000×${extraStep}）`;
     }
-    
-    shuffle(targetQueue); shuffle(availableSlots);
-    for (let i = 0; i < targetQueue.length; i++) {
-      if (i < availableSlots.length) db.assignments[availableSlots[i]] = targetQueue[i];
+    simple.push(`<li>今月の罰金: <strong>¥${fmtMoney(fine)}</strong> ${tableNote}</li>`);
+    simple.push(`<li>合計: <strong>¥${fmtMoney(feesTotal + fine)}</strong>（寮費 ¥${fmtMoney(feesTotal)} + 罰金 ¥${fmtMoney(fine)}）</li>`);
+    explainSimple.innerHTML = simple.join('');
+
+    // さらに詳しく（対象月と各月寮費など）
+    const full = [];
+    full.push(`<li>対象月: ${months.map(v=> `${v.y}-${String(v.m).padStart(2,'0')}`).join(', ')}</li>`);
+    if (arrearsMonths.length > 0) {
+      full.push(`<li>罰金カウント対象月: ${arrearsMonths.map(v => `${v.y}-${String(v.m).padStart(2,'0')}`).join(', ')}</li>`);
+    } else {
+      full.push('<li>罰金カウント対象月: なし</li>');
     }
-    
-    await saveData(); 
-    window.renderAdminResultTable(); 
-    alert("抽選完了！");
+    if (reductions.length){
+      for (const r of reductions){ full.push(`<li>特例圧縮: ${r.label}</li>`); }
+    } else {
+      full.push('<li>特例圧縮: なし</li>');
+    }
+    full.push(`<li>カウント(生→特例後): ${rawCount} → <strong>${effCount}</strong></li>`);
+    full.push(`<li>寮費合計: ¥${fmtMoney(feesTotal)}</li>`);
+    full.push(`<li>各月寮費: ${months.map(v => `${v.y}-${String(v.m).padStart(2,'0')} ¥${fmtMoney(feeFor(v.y, v.m))}`).join(', ')}</li>`);
+    explainFull.innerHTML = full.join('');
   }
 
-  window.exportCSV = function() {
-    let csvContent = "data:text/csv;charset=utf-8,\uFEFF候補枠,担当部屋番号\n";
-    db.slots.forEach(s => csvContent += `"${s}","${db.assignments[s] || ""}"\n`);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", "dormitory_assignment.csv");
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  // 基準月（任意指定）UI 初期化
+  const basisManualEl = /** @type {HTMLInputElement} */(document.getElementById('basisManual'));
+  const basisMonthEl  = /** @type {HTMLInputElement} */(document.getElementById('basisMonth'));
+  if (basisMonthEl){
+    const now0 = nowJST();
+    basisMonthEl.value = `${now0.getFullYear()}-${pad2(now0.getMonth()+1)}`;
   }
+  if (basisManualEl && basisMonthEl){
+    basisManualEl.addEventListener('change', ()=>{
+      basisMonthEl.disabled = !basisManualEl.checked;
+      render();
+    });
+    basisMonthEl.addEventListener('change', render);
+  }
+  // 初期表示
+  const inp = document.getElementById('lastPaid');
+  inp.addEventListener('change', render);
+  render();
+})();
 </script>
 </body>
 </html>
