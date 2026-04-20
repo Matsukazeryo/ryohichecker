@@ -766,7 +766,9 @@
       countSummaryEl.innerHTML = `罰金対象は <strong>${penaltyRange}</strong>。そのまま <strong>${effCount}か月</strong> として数えます。`;
     }
 
-    if (tierKey === 'low'){
+    if (tierKey === 'none'){
+      scaleNoteEl.innerHTML = '特例後のカウントが <strong>0–1か月</strong> なので、罰金は <strong>¥0</strong> です。';
+    } else if (tierKey === 'low'){
       scaleNoteEl.innerHTML = `今回は <strong>2–5か月</strong> の帯なので、罰金は <strong>¥${fmtMoney(fine)}</strong> です。`;
     } else if (tierKey === 'mid'){
       scaleNoteEl.innerHTML = `今回は <strong>6–11か月</strong> の帯なので、罰金は <strong>¥${fmtMoney(fine)}</strong> です。`;
