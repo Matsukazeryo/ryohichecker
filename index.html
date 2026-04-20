@@ -7,105 +7,348 @@
   <title>寮費チェッカー</title>
   <style>
     :root {
-      --bg: #f8fafc;          /* page bg */
-      --card: #ffffff;        /* card bg */
-      --text: #0f172a;        /* slate-900 */
-      --muted: #475569;       /* slate-600 */
-      --accent: #16a34a;      /* green-600 */
-      --accent-2: #3b82f6;    /* blue-500 */
-      --danger: #dc2626;      /* red-600 */
-      --ring: rgba(59,130,246,0.25);
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --accent: #16a34a;
+      --accent-2: #3b82f6;
+      --danger: #dc2626;
+      --ring: rgba(59,130,246,0.18);
       --line: rgba(2,6,23,0.08);
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
     }
+
     * { box-sizing: border-box; }
-    html, body { height: 100%; }
+    html, body { min-height: 100%; }
+
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", Meiryo, sans-serif;
       background: linear-gradient(180deg, #ffffff, #f8fafc 40%);
       color: var(--text);
-      display: grid;
-      place-items: center;
       padding: 24px;
       overflow-x: hidden;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
       -webkit-text-size-adjust: 100%;
     }
+
     .app {
-      width: min(880px, 100%);
+      width: min(900px, 100%);
+      margin: 0 auto;
       background: #ffffff;
-      backdrop-filter: none;
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px; padding: 20px 20px 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+      border-radius: 18px;
+      padding: 20px 20px 16px;
+      box-shadow: var(--shadow);
       position: relative;
     }
-    header { display:flex; align-items:center; gap:12px; margin-bottom: 16px; }
-    header h1 { font-size: clamp(18px, 2.8vw, 28px); margin: 0; letter-spacing: .02em; }
-    .badge { font-size: 12px; padding: 4px 8px; border-radius: 999px; background: rgba(96,165,250,0.15); color:#cfe3ff; border:1px solid rgba(96,165,250,0.35); }
 
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
-    .grid { display:grid; gap: 12px; grid-template-columns: 1fr; }
-    @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
 
-    label { font-size: 14px; color: var(--muted); display:block; margin-bottom: 6px; }
-    input[type="month"] {
-      width: 80%;
-      max-width: 260px;
-      min-width: 0;
-      display: block;
+    header h1 {
+      font-size: clamp(20px, 3vw, 30px);
       margin: 0;
-      padding: 12px 12px;
+      letter-spacing: .02em;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+      align-items: stretch;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .input-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: linear-gradient(180deg, #fcfdff, #f8fbff);
+    }
+
+    label {
+      font-size: 14px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .picker-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .picker-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .picker-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .picker-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 2px 0;
+    }
+
+    .select-shell {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 110px;
+    }
+
+    .select-shell::after {
+      content: "";
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: translateY(-60%) rotate(45deg);
+      pointer-events: none;
+    }
+
+    select {
+      width: 100%;
+      min-width: 0;
+      padding: 12px 38px 12px 12px;
       font-size: 16px;
       color: var(--text);
-      background: #f1f5f9;
+      background: #f8fafc;
       border: 1px solid var(--line);
       border-radius: 10px;
       outline: none;
-      box-shadow: 0 0 0 3px var(--ring);
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      box-shadow: 0 0 0 3px transparent;
     }
 
-    #lastPaid {
-      border-width: 2px;
+    select:focus {
       border-color: var(--accent-2);
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+
+    select:disabled {
+      color: #64748b;
+      background: #f1f5f9;
+      cursor: not-allowed;
+    }
+
+    .picker-block.primary .select-shell select {
+      border-width: 2px;
+      border-color: rgba(59,130,246,0.35);
       background: #eff6ff;
     }
-    input[type="month"]:focus { border-color: var(--accent-2); box-shadow: 0 0 0 4px var(--ring); }
 
-    .hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+      line-height: 1.7;
+    }
+
+    .check-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .check-label input {
+      margin: 0;
+      accent-color: var(--accent-2);
+    }
+
+    .result-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
 
     .result {
-      display:flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding: 14px 16px; border-radius: 12px; border:1px solid var(--line);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 100%;
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
       background: linear-gradient(180deg, #ecfdf5, #f0fdf4);
+      overflow: hidden;
     }
-    .money { font-size: clamp(22px, 4.2vw, 36px); font-weight: 700; letter-spacing: .02em; position: relative; overflow: hidden; }
-    .money .yen { font-weight: 600; font-size: 0.7em; opacity: .8; margin-right: 2px; }
-    .hero { display:flex; flex-direction:column; gap:8px; }
-    .sub { font-size: 14px; color: var(--muted); }
-    .chip { display:inline-block; padding: 2px 8px; border-radius: 999px; border:1px solid rgba(220,38,38,0.35); background: #fee2e2; }
-    .finechip { border-color: rgba(239,68,68,0.4); }
+
+    .confetti-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 8px;
+      height: 14px;
+      border-radius: 999px;
+      opacity: 0;
+      transform: translate(0, 0) rotate(0deg) scale(0.7);
+      background: var(--confetti, #e7c873);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.18);
+    }
+
+    .confetti-piece:nth-child(1) { left: 10%; top: 78%; --dx: 78px; --dy: -82px; --rot: -160deg; --delay: 0ms; --confetti: #f0cf72; }
+    .confetti-piece:nth-child(2) { left: 12%; top: 80%; --dx: 104px; --dy: -56px; --rot: -80deg; --delay: 40ms; --confetti: #9bc38b; }
+    .confetti-piece:nth-child(3) { left: 14%; top: 82%; --dx: 90px; --dy: -18px; --rot: -120deg; --delay: 70ms; --confetti: #f5e5b6; }
+    .confetti-piece:nth-child(4) { left: 16%; top: 76%; --dx: 118px; --dy: -92px; --rot: -200deg; --delay: 20ms; --confetti: #d9b15f; }
+    .confetti-piece:nth-child(5) { left: 18%; top: 83%; --dx: 82px; --dy: -4px; --rot: -150deg; --delay: 90ms; --confetti: #7fb78d; }
+    .confetti-piece:nth-child(6) { left: 20%; top: 79%; --dx: 128px; --dy: -48px; --rot: -230deg; --delay: 50ms; --confetti: #f3dba0; }
+    .confetti-piece:nth-child(7) { left: 90%; top: 78%; --dx: -78px; --dy: -82px; --rot: 160deg; --delay: 0ms; --confetti: #f0cf72; }
+    .confetti-piece:nth-child(8) { left: 88%; top: 80%; --dx: -104px; --dy: -56px; --rot: 80deg; --delay: 40ms; --confetti: #9bc38b; }
+    .confetti-piece:nth-child(9) { left: 86%; top: 82%; --dx: -90px; --dy: -18px; --rot: 120deg; --delay: 70ms; --confetti: #f5e5b6; }
+    .confetti-piece:nth-child(10) { left: 84%; top: 76%; --dx: -118px; --dy: -92px; --rot: 200deg; --delay: 20ms; --confetti: #d9b15f; }
+    .confetti-piece:nth-child(11) { left: 82%; top: 83%; --dx: -82px; --dy: -4px; --rot: 150deg; --delay: 90ms; --confetti: #7fb78d; }
+    .confetti-piece:nth-child(12) { left: 80%; top: 79%; --dx: -128px; --dy: -48px; --rot: 230deg; --delay: 50ms; --confetti: #f3dba0; }
+
+    .result.burst-active .confetti-piece {
+      animation: confetti-burst 900ms cubic-bezier(.15,.7,.2,1) forwards;
+      animation-delay: var(--delay, 0ms);
+    }
+
+    .money {
+      font-size: clamp(24px, 4.2vw, 38px);
+      font-weight: 700;
+      letter-spacing: .02em;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .money .yen {
+      font-weight: 600;
+      font-size: 0.7em;
+      opacity: .8;
+      margin-right: 2px;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sub {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .zero-fine-note {
+      display: none;
+      align-self: flex-start;
+      padding: 5px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(188, 150, 69, 0.34);
+      background: linear-gradient(135deg, rgba(255,243,210,0.95), rgba(255,253,243,0.98));
+      color: #7c5a13;
+      font-size: 12px;
+      letter-spacing: .02em;
+      box-shadow: 0 4px 12px rgba(188, 150, 69, 0.10);
+    }
+
+    .result.zero-fine .zero-fine-note {
+      display: inline-flex;
+    }
+
+    .chip {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(220,38,38,0.24);
+      background: #fee2e2;
+    }
+
+    .finechip { border-color: rgba(239,68,68,0.3); }
     .yen-inline { opacity:.8; margin-right:2px; }
 
-    /* ===== Animations & Effects ===== */
     @keyframes bump { 0%{ transform:scale(1);} 35%{ transform:scale(1.06);} 100%{ transform:scale(1);} }
     .money.bump { animation: bump 450ms ease; }
 
     @keyframes shine { from { left:-120%; } to { left:120%; } }
-    .money.shine::after { content:""; position:absolute; top:0; bottom:0; left:-120%; width:140%; background: linear-gradient(120deg, rgba(255,255,255,0), rgba(255,255,255,0.6) 25%, rgba(255,255,255,0) 50%); animation: shine .8s ease; }
+    .money.shine::after {
+      content:"";
+      position:absolute;
+      top:0;
+      bottom:0;
+      left:-120%;
+      width:140%;
+      background: linear-gradient(120deg, rgba(255,255,255,0), rgba(255,255,255,0.6) 25%, rgba(255,255,255,0) 50%);
+      animation: shine .8s ease;
+    }
 
-    @keyframes pop { 0%{ transform:scale(.94); } 60%{ transform:scale(1.06);} 100%{ transform:scale(1);} }
-    .chip.pop { animation: pop 380ms ease; }
+    @keyframes confetti-burst {
+      0% {
+        opacity: 0;
+        transform: translate(0, 0) rotate(0deg) scale(0.6);
+      }
+      12% {
+        opacity: 1;
+      }
+      72% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1);
+      }
+    }
 
-    /* Details arrow */
-
-    /* Details arrow */
     details > summary { position:relative; padding-right:18px; }
-    details > summary::after { content:""; position:absolute; right:4px; top:50%; width:8px; height:8px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform: translateY(-50%) rotate(-45deg); transition: transform .2s ease; }
+    details > summary::after {
+      content:"";
+      position:absolute;
+      right:4px;
+      top:50%;
+      width:8px;
+      height:8px;
+      border-right:2px solid var(--muted);
+      border-bottom:2px solid var(--muted);
+      transform: translateY(-50%) rotate(-45deg);
+      transition: transform .2s ease;
+    }
     details[open] > summary::after { transform: translateY(-50%) rotate(45deg); }
 
-    /* Reduced motion support */
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
     }
@@ -115,25 +358,35 @@
     .kpi h4 { margin: 0; font-size: 12px; color: var(--muted); font-weight: 500; }
     .kpi p { margin: 6px 0 0; font-size: 16px; font-weight: 700; }
 
-    details { background: var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+    details {
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+    }
     details > summary { cursor: pointer; font-weight: 600; }
     details[open] { background: #fff; }
     ul { margin: 8px 0 0 18px; }
     .muted { color: var(--muted); }
     .danger { color: var(--danger); }
-    
+
+    @media (min-width: 720px) {
+      .grid {
+        grid-template-columns: minmax(290px, 330px) minmax(0, 1fr);
+      }
+    }
+
     @media (max-width: 480px) {
       body { padding: 12px; }
       .app { padding: 16px 14px; border-radius: 14px; }
       header h1 { font-size: 20px; }
-      .result { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .result { flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; }
       .money { font-size: 32px; }
-      input[type="month"] {
+      select {
         font-size: 16px;
         padding: 12px;
-        width: 80%;
-        max-width: 260px;
       }
+      .picker-row { max-width: none; }
       details > summary { font-size: 14px; }
       .sub { font-size: 13px; }
     }
@@ -146,25 +399,59 @@
     </header>
 
     <div class="grid">
-      <div class="card">
-        <label for="lastPaid">最後に払った「月分」<span class="muted" style="font-weight:400"></span></label>
-        <input id="lastPaid" type="month" placeholder="例: 2025-07" title="最後に払った『月分』（例：2025-07）" />
-        <div class="hint">例：<code>2025-07</code>（7月分まで払った場合）。上の青い枠をタップして最後に払った「月分」を選んでください。</div>
-        <div class="hint" style="margin-top:10px">
-          <label style="display:block;color:var(--muted);font-size:12px;margin-bottom:4px;">基準月（自動）</label>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input id="basisMonth" type="month" disabled />
-            <label style="font-size:12px;"><input type="checkbox" id="basisManual"/> 手動設定</label>
+      <div class="card input-card">
+        <div class="picker-block primary">
+          <label>最後に払った「月分」<span class="muted" style="font-weight:400"></span></label>
+          <div class="picker-row">
+            <div class="select-shell">
+              <select id="lastPaidYear" aria-label="最後に払った年"></select>
+            </div>
+            <div class="select-shell">
+              <select id="lastPaidMonth" aria-label="最後に払った月"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="picker-divider"></div>
+
+        <div class="picker-block">
+          <div class="picker-head">
+            <label style="margin:0;">基準月（自動）</label>
+            <label class="check-label"><input type="checkbox" id="basisManual" /> 手動設定</label>
+          </div>
+          <div class="picker-row">
+            <div class="select-shell">
+              <select id="basisYear" aria-label="基準年"></select>
+            </div>
+            <div class="select-shell">
+              <select id="basisMonth" aria-label="基準月"></select>
+            </div>
           </div>
           <div class="hint">未チェックなら日本時間で今月を自動取得。</div>
         </div>
       </div>
-      <div class="card">
-        <div class="result">
+
+      <div class="card result-card">
+        <div class="result" id="resultBox">
+          <div class="confetti-layer" aria-hidden="true">
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+            <span class="confetti-piece"></span>
+          </div>
           <div class="hero">
             <div class="muted">次に払う総額</div>
             <div class="money"><span class="yen">¥</span><span id="grandTotal">0</span></div>
             <div class="sub">内訳：寮費 <span class="yen-inline">¥</span><span id="feesTotal">0</span> ＋ <span class="chip finechip">罰金 <span class="yen-inline">¥</span><span id="fine">0</span></span></div>
+            <div class="zero-fine-note" id="zeroFineNote">支払いなし</div>
           </div>
           <div class="kpis" style="display:none">
             <div class="kpi"><h4>滞納(生)</h4><p id="rawCount">0</p></div>
@@ -209,35 +496,31 @@
             el.muted = true;
             el.pause && el.pause();
             el.removeAttribute && el.removeAttribute('autoplay');
-          } catch(_){}
+          } catch(_){ }
         });
       };
-      // Mute anything currently in the DOM
       muteAll(document);
-      // Also mute anything added later
       const mo = new MutationObserver(muts => {
         for (const m of muts){
           for (const n of m.addedNodes){
             if (!(n instanceof HTMLElement)) continue;
             if (n.matches && (n.matches('audio') || n.matches('video'))){
-              try { n.muted = true; n.pause && n.pause(); n.removeAttribute && n.removeAttribute('autoplay'); } catch(_){}
+              try { n.muted = true; n.pause && n.pause(); n.removeAttribute && n.removeAttribute('autoplay'); } catch(_){ }
             }
-            // Nested
             muteAll(n);
           }
         }
       });
       mo.observe(document.documentElement, { childList: true, subtree: true });
-    } catch(_){}
+    } catch(_){ }
   })();
 
-  // Count-up animation for numbers with commas
   function animateCount(el, from, to, duration=700){
     if (prefersReduced) { el.textContent = fmtMoney(to); return; }
     const start = performance.now();
     const step = (now)=>{
       const p = Math.min(1, (now - start) / duration);
-      const val = Math.round(from + (to - from) * (1 - Math.pow(1-p, 3))); // easeOutCubic
+      const val = Math.round(from + (to - from) * (1 - Math.pow(1-p, 3)));
       el.textContent = fmtMoney(val);
       if (p < 1) requestAnimationFrame(step);
     };
@@ -246,25 +529,62 @@
 
   function bump(el){ if(!el) return; el.classList.remove('bump','shine'); void el.offsetWidth; el.classList.add('bump','shine'); setTimeout(()=>{ el.classList.remove('bump','shine'); }, 900); }
 
+  function populateMonthSelects(yearEl, monthEl, fromYear, toYear){
+    if (!yearEl || !monthEl) return;
 
-  const state = { fine: 0, fees: 0, grand: 0 };
+    yearEl.innerHTML = '<option value="">年</option>';
+    for (let y = toYear; y >= fromYear; y -= 1){
+      const opt = document.createElement('option');
+      opt.value = String(y);
+      opt.textContent = `${y}年`;
+      yearEl.appendChild(opt);
+    }
 
-  // 現在(日本時間)を取得
-  const nowJST = ()=> new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
-
-  // 前月(支払い対象の上限)を返す
-  function prevYearMonth(d){
-    const y = d.getFullYear();
-    const m = d.getMonth() + 1; // 1-12
-    if (m === 1) return {y: y-1, m: 12};
-    return {y, m: m-1};
+    monthEl.innerHTML = '<option value="">月</option>';
+    for (let m = 1; m <= 12; m += 1){
+      const opt = document.createElement('option');
+      opt.value = pad2(m);
+      opt.textContent = `${m}月`;
+      monthEl.appendChild(opt);
+    }
   }
 
-  // start(含まず)→end(含む) の月配列を作る
+  function setYearMonthSelects(yearEl, monthEl, year, month){
+    if (!yearEl || !monthEl) return;
+    yearEl.value = year ? String(year) : '';
+    monthEl.value = month ? pad2(month) : '';
+  }
+
+  function getYearMonthFromSelects(yearEl, monthEl){
+    if (!yearEl || !monthEl || !yearEl.value || !monthEl.value) return null;
+    return {
+      y: parseInt(yearEl.value, 10),
+      m: parseInt(monthEl.value, 10)
+    };
+  }
+
+  function setSelectsDisabled(yearEl, monthEl, disabled){
+    if (yearEl) yearEl.disabled = disabled;
+    if (monthEl) monthEl.disabled = disabled;
+  }
+
+  function initMonthSelects(yearId, monthId, opts = {}){
+    const yearEl = document.getElementById(yearId);
+    const monthEl = document.getElementById(monthId);
+    if (!yearEl || !monthEl) return null;
+    const now = nowJST();
+    const fromYear = opts.fromYear || 2020;
+    const toYear = opts.toYear || now.getFullYear() + 2;
+    populateMonthSelects(yearEl, monthEl, fromYear, toYear);
+    return { yearEl, monthEl };
+  }
+
+  const state = { fine: 0, fees: 0, grand: 0, lastBurstKey: '', burstTimer: null };
+  const nowJST = ()=> new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+
   function enumerateMonths(start, end){
     const out = [];
     let y = start.y, m = start.m;
-    // 1つ進めてから push
     do {
       m += 1;
       if (m === 13) { y++; m = 1; }
@@ -273,22 +593,17 @@
     return out;
   }
 
-  // 特殊カウントを適用
   function applySpecialCount(months){
     const set = new Set(months.map(v=> `${v.y}-${v.m}`));
     const reductions = [];
-
-    // 毎年の 2-3 / 8-9
     const years = [...new Set(months.map(v=> v.y))];
     for (const y of years){
       if (set.has(`${y}-2`) && set.has(`${y}-3`)) reductions.push({y, pair:[2,3], label:`${y}年2–3月分を「2で1」に圧縮`});
       if (set.has(`${y}-8`) && set.has(`${y}-9`)) reductions.push({y, pair:[8,9], label:`${y}年8–9月分を「2で1」に圧縮`});
     }
-    // 2025年5-6のみ特例
     if (set.has(`2025-5`) && set.has(`2025-6`)) reductions.push({y:2025, pair:[5,6], label:`2025年5–6月分を「2で1」に圧縮`});
-
     const raw = months.length;
-    const eff = Math.max(0, raw - reductions.length); // 2か月→1か月 なので 1 減らす
+    const eff = Math.max(0, raw - reductions.length);
     return { rawCount: raw, effCount: eff, reductions };
   }
 
@@ -296,40 +611,49 @@
     if (effCount <= 1) return 0;
     if (effCount <= 5) return 5000;
     if (effCount <= 11) return 10000;
-    // 12ヶ月以上
-    const extra = Math.floor((effCount - 12) / 12) * 5000; // 24,36,... で +5,000 ずつ
+    const extra = Math.floor((effCount - 12) / 12) * 5000;
     return 15000 + extra;
   }
 
-  // 寮費テーブル
   function feeFor(y, m){
-    // 2023年1–6月: 21000
     if (y === 2023 && m >= 1 && m <= 6) return 21000;
-    // 2023年7–12月 と 2024年1–3月: 19000
     if ((y === 2023 && m >= 7 && m <= 12) || (y === 2024 && m >= 1 && m <= 3)) return 19000;
-    // 2024年4月以降（2025年、2026年以降も含む）: 17000
     if (y > 2024 || (y === 2024 && m >= 4)) return 17000;
-    // フォールバック
     return 17000;
+  }
+
+  function triggerZeroFineBurst(resultEl, burstKey){
+    if (!resultEl || prefersReduced || !burstKey) return;
+    if (state.lastBurstKey === burstKey) return;
+    state.lastBurstKey = burstKey;
+    resultEl.classList.remove('burst-active');
+    void resultEl.offsetWidth;
+    resultEl.classList.add('burst-active');
+    if (state.burstTimer) clearTimeout(state.burstTimer);
+    state.burstTimer = setTimeout(()=>{
+      resultEl.classList.remove('burst-active');
+    }, 1100);
   }
 
   function render(){
     const basisManualEl = /** @type {HTMLInputElement} */(document.getElementById('basisManual'));
-    const basisMonthEl  = /** @type {HTMLInputElement} */(document.getElementById('basisMonth'));
+    const basisYearEl = /** @type {HTMLSelectElement} */(document.getElementById('basisYear'));
+    const basisMonthEl = /** @type {HTMLSelectElement} */(document.getElementById('basisMonth'));
 
-    let refDate = nowJST(); // デフォは自動（今月 JST）
-    if (basisManualEl && basisManualEl.checked && basisMonthEl && basisMonthEl.value){
-      const [by, bm] = basisMonthEl.value.split('-').map(n=> parseInt(n,10));
-      refDate = new Date(by, bm-1, 1);
+    let refDate = nowJST();
+    const basisPicked = getYearMonthFromSelects(basisYearEl, basisMonthEl);
+    if (basisManualEl && basisManualEl.checked && basisPicked){
+      refDate = new Date(basisPicked.y, basisPicked.m - 1, 1);
     }
-    const basis = { y: refDate.getFullYear(), m: refDate.getMonth()+1 }; // 基準月（今月）までが対象
+    const basis = { y: refDate.getFullYear(), m: refDate.getMonth()+1 };
     const basisLabel = document.getElementById('basis');
     if (basisLabel) {
       basisLabel.textContent = `${refDate.getFullYear()}年${refDate.getMonth()+1}月（対象は${ymt(basis.y,basis.m)}まで）`;
     }
 
-    const inp = /** @type {HTMLInputElement} */(document.getElementById('lastPaid'));
-    const v = inp.value; // "YYYY-MM"
+    const lastPaidYearEl = /** @type {HTMLSelectElement} */(document.getElementById('lastPaidYear'));
+    const lastPaidMonthEl = /** @type {HTMLSelectElement} */(document.getElementById('lastPaidMonth'));
+    const lastPaidPicked = getYearMonthFromSelects(lastPaidYearEl, lastPaidMonthEl);
     const explainSimple = document.getElementById('explainSimple');
     const explainFull = document.getElementById('explainFull');
     const rawCountEl = document.getElementById('rawCount');
@@ -338,25 +662,26 @@
     const rangeEl = document.getElementById('range');
     const feesTotalEl = document.getElementById('feesTotal');
     const grandTotalEl = document.getElementById('grandTotal');
+    const resultBoxEl = document.getElementById('resultBox');
 
     explainSimple.innerHTML = '';
     explainFull.innerHTML = '';
 
-    if (!v){
+    if (!lastPaidPicked){
       rawCountEl.textContent = '0';
       effCountEl.textContent = '0';
       fineEl.textContent = '0';
       rangeEl.textContent = '—';
       feesTotalEl.textContent = '0';
       grandTotalEl.textContent = '0';
+      if (resultBoxEl) resultBoxEl.classList.remove('zero-fine');
+      state.lastBurstKey = '';
       state.fine = 0; state.fees = 0; state.grand = 0;
       return;
     }
 
-    const [Y, M] = v.split('-').map(n=> parseInt(n, 10));
-    const lastPaid = { y: Y, m: M };
+    const lastPaid = lastPaidPicked;
 
-    // lastPaid が基準より未来なら滞納なし
     if (lastPaid.y > basis.y || (lastPaid.y === basis.y && lastPaid.m >= basis.m)){
       rawCountEl.textContent = '0';
       effCountEl.textContent = '0';
@@ -364,12 +689,13 @@
       rangeEl.textContent = '滞納なし';
       feesTotalEl.textContent = '0';
       grandTotalEl.textContent = '0';
+      if (resultBoxEl) resultBoxEl.classList.add('zero-fine');
+      triggerZeroFineBurst(resultBoxEl, `clear:${lastPaid.y}-${lastPaid.m}:${basis.y}-${basis.m}`);
       state.fine = 0; state.fees = 0; state.grand = 0;
       return;
     }
 
     const months = enumerateMonths(lastPaid, basis);
-    // 罰金カウントに「基準月」は含めない（= 最後の1ヶ月は今月分として扱う）
     const arrearsMonths = months.slice(0, -1);
 
     let rawCount = 0;
@@ -395,20 +721,26 @@
     const moneyEl = document.querySelector('.money');
     const fineChip = document.querySelector('.chip.finechip');
 
-    // compute fees before animation
     const feesTotal = months.reduce((sum, v) => sum + feeFor(v.y, v.m), 0);
     const fine = calcFine(effCount);
+    const grand = feesTotal + fine;
+    if (resultBoxEl) resultBoxEl.classList.toggle('zero-fine', grand === 0);
+    if (grand === 0) {
+      triggerZeroFineBurst(resultBoxEl, `zero:${lastPaid.y}-${lastPaid.m}:${basis.y}-${basis.m}:${grand}`);
+    } else {
+      state.lastBurstKey = '';
+      if (resultBoxEl) resultBoxEl.classList.remove('burst-active');
+    }
 
     animateCount(fineEl, state.fine, fine, 650);
     animateCount(feesTotalEl, state.fees, feesTotal, 700);
-    animateCount(grandTotalEl, state.grand, feesTotal + fine, 800);
+    animateCount(grandTotalEl, state.grand, grand, 800);
 
     bump(moneyEl);
     bump(fineChip);
 
-    state.fine = fine; state.fees = feesTotal; state.grand = feesTotal + fine;
+    state.fine = fine; state.fees = feesTotal; state.grand = grand;
 
-    // かんたん内訳（寮生向け）
     const simple = [];
     if (arrearsMonths.length > 0) {
       simple.push(`<li>対象期間: ${ymt(arrearsMonths[0].y, arrearsMonths[0].m)} 〜 ${ymt(arrearsMonths[arrearsMonths.length - 1].y, arrearsMonths[arrearsMonths.length - 1].m)}</li>`);
@@ -416,7 +748,6 @@
       simple.push('<li>対象期間: なし（今月分のみ未払い）</li>');
     }
     simple.push(`<li>罰金カウント: <strong>${effCount}か月</strong>${reductions.length ? `（特例 ${reductions.length}件 適用）` : ''}</li>`);
-    // 適用されたテーブル表記
     let tableNote = '';
     if (effCount >= 2 && effCount <= 5) tableNote = '（2–5か月 → ¥5,000）';
     else if (effCount >= 6 && effCount <= 11) tableNote = '（6–11か月 → ¥10,000）';
@@ -425,10 +756,9 @@
       tableNote = `（12か月以上 → ¥15,000 ＋ 12か月ごとに¥5,000×${extraStep}）`;
     }
     simple.push(`<li>今月の罰金: <strong>¥${fmtMoney(fine)}</strong> ${tableNote}</li>`);
-    simple.push(`<li>合計: <strong>¥${fmtMoney(feesTotal + fine)}</strong>（寮費 ¥${fmtMoney(feesTotal)} + 罰金 ¥${fmtMoney(fine)}）</li>`);
+    simple.push(`<li>合計: <strong>¥${fmtMoney(grand)}</strong>（寮費 ¥${fmtMoney(feesTotal)} + 罰金 ¥${fmtMoney(fine)}）</li>`);
     explainSimple.innerHTML = simple.join('');
 
-    // さらに詳しく（対象月と各月寮費など）
     const full = [];
     full.push(`<li>対象月: ${months.map(v=> `${v.y}-${String(v.m).padStart(2,'0')}`).join(', ')}</li>`);
     if (arrearsMonths.length > 0) {
@@ -447,23 +777,31 @@
     explainFull.innerHTML = full.join('');
   }
 
-  // 基準月（任意指定）UI 初期化
+  const lastPaidField = initMonthSelects('lastPaidYear', 'lastPaidMonth', { fromYear: 2020 });
+  const basisField = initMonthSelects('basisYear', 'basisMonth', { fromYear: 2020 });
+
   const basisManualEl = /** @type {HTMLInputElement} */(document.getElementById('basisManual'));
-  const basisMonthEl  = /** @type {HTMLInputElement} */(document.getElementById('basisMonth'));
-  if (basisMonthEl){
+  if (basisField){
     const now0 = nowJST();
-    basisMonthEl.value = `${now0.getFullYear()}-${pad2(now0.getMonth()+1)}`;
+    setYearMonthSelects(basisField.yearEl, basisField.monthEl, now0.getFullYear(), now0.getMonth() + 1);
+    setSelectsDisabled(basisField.yearEl, basisField.monthEl, true);
+    basisField.yearEl.addEventListener('change', render);
+    basisField.monthEl.addEventListener('change', render);
   }
-  if (basisManualEl && basisMonthEl){
+  if (lastPaidField){
+    lastPaidField.yearEl.addEventListener('change', render);
+    lastPaidField.monthEl.addEventListener('change', render);
+  }
+  if (basisManualEl && basisField){
     basisManualEl.addEventListener('change', ()=>{
-      basisMonthEl.disabled = !basisManualEl.checked;
+      if (!basisManualEl.checked) {
+        const now0 = nowJST();
+        setYearMonthSelects(basisField.yearEl, basisField.monthEl, now0.getFullYear(), now0.getMonth() + 1);
+      }
+      setSelectsDisabled(basisField.yearEl, basisField.monthEl, !basisManualEl.checked);
       render();
     });
-    basisMonthEl.addEventListener('change', render);
   }
-  // 初期表示
-  const inp = document.getElementById('lastPaid');
-  inp.addEventListener('change', render);
   render();
 })();
 </script>
