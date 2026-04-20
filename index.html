@@ -367,6 +367,89 @@
     details > summary { cursor: pointer; font-weight: 600; }
     details[open] { background: #fff; }
     ul { margin: 8px 0 0 18px; }
+    .explain-flow {
+      display: grid;
+      gap: 10px;
+      margin: 10px 0 12px;
+    }
+    .flow-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #f8fafc;
+    }
+    .flow-label {
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .flow-copy {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .compact-rules {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .compact-rule {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .fine-scale {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 10px;
+    }
+    .fine-tier {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
+    }
+    .fine-tier strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+    .fine-tier span {
+      display: block;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .fine-tier small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .fine-tier.is-active {
+      border-color: var(--accent-2);
+      background: #eff6ff;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+      transform: translateY(-1px);
+    }
+    .fine-scale-note {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
     .muted { color: var(--muted); }
     .danger { color: var(--danger); }
 
@@ -387,6 +470,7 @@
         padding: 12px;
       }
       .picker-row { max-width: none; }
+      .fine-scale { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       details > summary { font-size: 14px; }
       .sub { font-size: 13px; }
     }
@@ -465,15 +549,32 @@
     <div class="card" style="margin-top:12px">
       <details id="breakdown">
         <summary>詳細（罰金の根拠・対象月）</summary>
-        <div class="muted" style="margin:8px 0 6px">毎年 <strong>2–3月分</strong> と <strong>8–9月分</strong> は <strong>2か月で1カウント</strong>。さらに <strong>2025年5–6月分</strong> も 2か月で1カウント。</div>
+        <div class="explain-flow">
+          <div class="flow-card">
+            <div class="flow-label">数え方</div>
+            <p class="flow-copy" id="fineCountSummary">月を選ぶと、ここで罰金の数え方がわかります。</p>
+            <div class="compact-rules">
+              <span class="compact-rule">2月 + 3月 → 1カウント</span>
+              <span class="compact-rule">8月 + 9月 → 1カウント</span>
+              <span class="compact-rule">2025年5月 + 6月 → 1カウント</span>
+            </div>
+          </div>
+          <div class="flow-card">
+            <div class="flow-label">罰金テーブル</div>
+            <div class="fine-scale" id="fineScale">
+              <div class="fine-tier" data-tier="none"><strong>0–1か月</strong><span>¥0</span><small>罰金なし</small></div>
+              <div class="fine-tier" data-tier="low"><strong>2–5か月</strong><span>¥5,000</span><small>最初の帯</small></div>
+              <div class="fine-tier" data-tier="mid"><strong>6–11か月</strong><span>¥10,000</span><small>次の帯</small></div>
+              <div class="fine-tier" data-tier="high"><strong>12か月以上</strong><span>¥15,000+</span><small>12か月ごとに +¥5,000</small></div>
+            </div>
+            <div class="fine-scale-note" id="fineScaleNote">今のカウントがどの帯に入るか、ここでわかります。</div>
+          </div>
+        </div>
         <ul id="explainSimple"></ul>
         <details id="more" style="margin-top:8px">
           <summary>さらに詳しく（対象月一覧・各月寮費）</summary>
           <ul id="explainFull" style="margin-top:6px"></ul>
         </details>
-        <div class="muted" style="margin-top:8px">
-          罰金テーブル: <strong>2–5か月 → ¥5,000</strong> / <strong>6–11か月 → ¥10,000</strong> / <strong>12か月以上 → ¥15,000</strong>（以降12か月ごとに +¥5,000）。
-        </div>
       </details>
     </div>
 
@@ -622,6 +723,58 @@
     return 17000;
   }
 
+  function getFineTierKey(effCount){
+    if (effCount <= 1) return 'none';
+    if (effCount <= 5) return 'low';
+    if (effCount <= 11) return 'mid';
+    return 'high';
+  }
+
+  function updateFineGuide({ hasInput=false, paidUp=false, currentOnly=false, rawCount=0, effCount=0, fine=0, reductions=[], penaltyRange='なし' } = {}){
+    const countSummaryEl = document.getElementById('fineCountSummary');
+    const scaleNoteEl = document.getElementById('fineScaleNote');
+    const tiers = document.querySelectorAll('#fineScale .fine-tier');
+    const tierKey = getFineTierKey(effCount);
+
+    tiers.forEach((tier)=>{
+      tier.classList.toggle('is-active', hasInput && tier.dataset.tier === tierKey);
+    });
+
+    if (!countSummaryEl || !scaleNoteEl) return;
+
+    if (!hasInput){
+      countSummaryEl.textContent = '月を選ぶと、ここで罰金の数え方がわかります。';
+      scaleNoteEl.textContent = '今のカウントがどの帯に入るか、ここでわかります。';
+      return;
+    }
+
+    if (paidUp){
+      countSummaryEl.innerHTML = '未払いはありません。<strong>罰金カウント 0か月</strong>です。';
+      scaleNoteEl.innerHTML = 'いまは <strong>0–1か月</strong> の帯なので、罰金は <strong>¥0</strong> です。';
+      return;
+    }
+
+    if (currentOnly){
+      countSummaryEl.innerHTML = '罰金対象はありません。今月分だけなので <strong>0か月</strong> です。';
+      scaleNoteEl.innerHTML = 'いまは <strong>0–1か月</strong> の帯なので、罰金は <strong>¥0</strong> です。';
+      return;
+    }
+
+    if (reductions.length){
+      countSummaryEl.innerHTML = `罰金対象は <strong>${penaltyRange}</strong>。特例で <strong>${rawCount}か月 → ${effCount}か月</strong> にして数えます。`;
+    } else {
+      countSummaryEl.innerHTML = `罰金対象は <strong>${penaltyRange}</strong>。そのまま <strong>${effCount}か月</strong> として数えます。`;
+    }
+
+    if (tierKey === 'low'){
+      scaleNoteEl.innerHTML = `今回は <strong>2–5か月</strong> の帯なので、罰金は <strong>¥${fmtMoney(fine)}</strong> です。`;
+    } else if (tierKey === 'mid'){
+      scaleNoteEl.innerHTML = `今回は <strong>6–11か月</strong> の帯なので、罰金は <strong>¥${fmtMoney(fine)}</strong> です。`;
+    } else {
+      scaleNoteEl.innerHTML = `今回は <strong>12か月以上</strong> の帯なので、罰金は <strong>¥${fmtMoney(fine)}</strong> です。12か月増えるごとに +¥5,000 されます。`;
+    }
+  }
+
   function triggerZeroFineBurst(resultEl, burstKey){
     if (!resultEl || prefersReduced || !burstKey) return;
     if (state.lastBurstKey === burstKey) return;
@@ -675,6 +828,7 @@
       feesTotalEl.textContent = '0';
       grandTotalEl.textContent = '0';
       if (resultBoxEl) resultBoxEl.classList.remove('zero-fine');
+      updateFineGuide({ hasInput: false });
       state.lastBurstKey = '';
       state.fine = 0; state.fees = 0; state.grand = 0;
       return;
@@ -690,6 +844,7 @@
       feesTotalEl.textContent = '0';
       grandTotalEl.textContent = '0';
       if (resultBoxEl) resultBoxEl.classList.add('zero-fine');
+      updateFineGuide({ hasInput: true, paidUp: true, effCount: 0, fine: 0 });
       triggerZeroFineBurst(resultBoxEl, `clear:${lastPaid.y}-${lastPaid.m}:${basis.y}-${basis.m}`);
       state.fine = 0; state.fees = 0; state.grand = 0;
       return;
@@ -715,6 +870,10 @@
       rangeEl.textContent = '滞納なし';
     }
 
+    const penaltyRangeText = arrearsMonths.length > 0
+      ? `${ymt(arrearsMonths[0].y, arrearsMonths[0].m)} 〜 ${ymt(arrearsMonths[arrearsMonths.length - 1].y, arrearsMonths[arrearsMonths.length - 1].m)}`
+      : 'なし（今月分のみ）';
+
     rawCountEl.textContent = String(rawCount);
     effCountEl.textContent = String(effCount);
 
@@ -724,6 +883,15 @@
     const feesTotal = months.reduce((sum, v) => sum + feeFor(v.y, v.m), 0);
     const fine = calcFine(effCount);
     const grand = feesTotal + fine;
+    updateFineGuide({
+      hasInput: true,
+      currentOnly: arrearsMonths.length === 0,
+      rawCount,
+      effCount,
+      fine,
+      reductions,
+      penaltyRange: penaltyRangeText
+    });
     if (resultBoxEl) resultBoxEl.classList.toggle('zero-fine', grand === 0);
     if (grand === 0) {
       triggerZeroFineBurst(resultBoxEl, `zero:${lastPaid.y}-${lastPaid.m}:${basis.y}-${basis.m}:${grand}`);
