@@ -3,60 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#fff7eb">
+<meta name="theme-color" content="#f3f7ff">
 <title>松風寮 | 寮費チェッカー</title>
 <style>
   :root {
     color-scheme: light;
-    --paper: #fff7eb;
-    --ink: #202d26;
-    --muted: #536157;
-    --line: #e1ddcf;
-    --surface: #fffefa;
-    --pine: #215a47;
+    --paper: #f3f7ff;
+    --ink: #152744;
+    --muted: #4b6080;
+    --line: #d6e2f4;
+    --surface: #ffffff;
+    --blue: #1748b6;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   body {
     margin: 0;
     color: var(--ink);
-    background: radial-gradient(ellipse at top right, #ffead1, transparent 60%) var(--paper);
-    font: 15px/1.65 "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+    background: var(--paper);
+    font: 16px/1.65 "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
   }
   main { width: min(100% - 32px, 960px); margin: 0 auto; padding: clamp(24px, 6vw, 64px) 0; }
   header { margin-bottom: 24px; }
-  .brand { display: inline-block; padding: 4px 12px; border-radius: 999px; background: #fbe4c9; color: #704825; font-weight: 700; }
-  h1 { font-size: clamp(28px, 6vw, 46px); line-height: 1.25; margin: 10px 0; }
+  .brand { color: var(--blue); font-size: 12px; font-weight: 700; letter-spacing: .14em; }
+  h1 { font-size: clamp(28px, 6vw, 50px); font-weight: 800; line-height: 1.2; letter-spacing: -.045em; margin: 8px 0; }
   h2 { font-size: 19px; margin: 2px 0 14px; }
   p { margin: 0; }
   .muted, .hint { color: var(--muted); }
-  .hint { font-size: 13px; }
+  .hint { font-size: 14px; }
   .layout { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 14px; }
-  .panel, .details { border: 1px solid var(--line); border-radius: 22px; background: var(--surface); }
+  .panel, .details { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); }
   .panel { padding: clamp(16px, 3vw, 26px); }
   .field { margin-top: 16px; }
   .field-title { display: block; font-weight: 700; margin-bottom: 6px; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   select {
     width: 100%; min-width: 0; min-height: 44px; padding: 8px;
-    font: inherit; color: var(--ink); background: #f6f8f1;
-    border: 1px solid #a9b6a6; border-radius: 8px;
+    font: inherit; color: var(--ink); background: #f5f8ff;
+    border: 1px solid #9eb3d5; border-radius: 8px;
   }
-  :focus-visible { outline: 3px solid #ad671c; outline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
   .basis { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
   .basis label { font-size: 13px; cursor: pointer; }
   .basis-options { margin-top: 8px; }
-  .receipt { position: relative; overflow: hidden; background: #edf7e9; border-color: #cbdcc7; }
+  .receipt { position: relative; overflow: hidden; border-top: 4px solid var(--blue); }
   .receipt h2 { margin-bottom: 4px; }
-  .total { font-size: clamp(33px, 7vw, 58px); font-weight: 800; line-height: 1.2; color: var(--pine); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .total { font-size: clamp(33px, 7vw, 58px); font-weight: 800; line-height: 1.2; color: var(--blue); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; margin-bottom: 8px; }
   .receipt dl { margin: 14px 0 0; }
-  .receipt dl > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 9px 0; border-top: 1px solid #cbdcc7; }
+  .receipt dl > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .receipt dt .hint { display: block; margin-top: 2px; }
   dt, dd { margin: 0; }
-  dd { font-weight: 700; font-variant-numeric: tabular-nums; }
+  dd { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .details { margin-top: 14px; padding: 13px clamp(16px, 3vw, 26px); }
   summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
   .details p, .details table, .details details { margin-top: 10px; }
-  .reason { margin-top: 14px; padding: 12px 14px; background: #f6f8f1; border-radius: 12px; }
+  .reason { margin-top: 14px; padding: 12px 14px; background: #f3f7ff; border-radius: 12px; }
   .reason h3 { margin: 0; font-size: 15px; }
   .reason p { margin-top: 5px; }
   table { width: 100%; border-collapse: collapse; text-align: left; }
@@ -213,7 +214,7 @@
     el('receipt').querySelectorAll('.particle').forEach((piece) => piece.remove());
     if (!key || matchMedia('(prefers-reduced-motion: reduce)').matches || !Element.prototype.animate) return;
     const receipt = el('receipt');
-    const colors = ['#498565', '#d48c42', '#a1ba62'];
+    const colors = ['#5280db', '#8fbcff', '#1748b6'];
     for (const direction of [1, -1]){
       for (let i = 0; i < 6; i++){
         const piece = document.createElement('span');
