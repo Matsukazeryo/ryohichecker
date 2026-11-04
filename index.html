@@ -1,698 +1,158 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#f0fdf4" />
-  <title>寮費チェッカー</title>
-  <style>
-    :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #475569;
-      --accent: #16a34a;
-      --accent-2: #3b82f6;
-      --danger: #dc2626;
-      --ring: rgba(59,130,246,0.18);
-      --line: rgba(2,6,23,0.08);
-      --shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
-    }
-
-    * { box-sizing: border-box; }
-    html, body { min-height: 100%; }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", Meiryo, sans-serif;
-      background: linear-gradient(180deg, #ffffff, #f8fafc 40%);
-      color: var(--text);
-      padding: 24px;
-      overflow-x: hidden;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      -webkit-text-size-adjust: 100%;
-    }
-
-    .app {
-      width: min(900px, 100%);
-      margin: 0 auto;
-      background: #ffffff;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 18px;
-      padding: 20px 20px 16px;
-      box-shadow: var(--shadow);
-      position: relative;
-    }
-
-    header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    header h1 {
-      font-size: clamp(20px, 3vw, 30px);
-      margin: 0;
-      letter-spacing: .02em;
-    }
-
-    .grid {
-      display: grid;
-      gap: 14px;
-      grid-template-columns: 1fr;
-      align-items: stretch;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 18px;
-    }
-
-    .input-card {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: linear-gradient(180deg, #fcfdff, #f8fbff);
-    }
-
-    label {
-      font-size: 14px;
-      color: var(--muted);
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .picker-block {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .picker-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .picker-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      width: 100%;
-      max-width: 320px;
-    }
-
-    .picker-divider {
-      height: 1px;
-      background: var(--line);
-      margin: 2px 0;
-    }
-
-    .select-shell {
-      position: relative;
-      flex: 1 1 0;
-      min-width: 110px;
-    }
-
-    .select-shell::after {
-      content: "";
-      position: absolute;
-      right: 14px;
-      top: 50%;
-      width: 8px;
-      height: 8px;
-      border-right: 2px solid var(--muted);
-      border-bottom: 2px solid var(--muted);
-      transform: translateY(-60%) rotate(45deg);
-      pointer-events: none;
-    }
-
-    select {
-      width: 100%;
-      min-width: 0;
-      padding: 12px 38px 12px 12px;
-      font-size: 16px;
-      color: var(--text);
-      background: #f8fafc;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-      box-shadow: 0 0 0 3px transparent;
-    }
-
-    select:focus {
-      border-color: var(--accent-2);
-      box-shadow: 0 0 0 4px var(--ring);
-    }
-
-    select:disabled {
-      color: #64748b;
-      background: #f1f5f9;
-      cursor: not-allowed;
-    }
-
-    .picker-block.primary .select-shell select {
-      border-width: 2px;
-      border-color: rgba(59,130,246,0.35);
-      background: #eff6ff;
-    }
-
-    .hint {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 6px;
-      line-height: 1.7;
-    }
-
-    .check-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin: 0;
-      font-size: 12px;
-      color: var(--muted);
-      cursor: pointer;
-    }
-
-    .check-label input {
-      margin: 0;
-      accent-color: var(--accent-2);
-    }
-
-    .result-card {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .result {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      min-height: 100%;
-      padding: 18px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, #ecfdf5, #f0fdf4);
-      overflow: hidden;
-    }
-
-    .confetti-layer {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .confetti-piece {
-      position: absolute;
-      width: 8px;
-      height: 14px;
-      border-radius: 999px;
-      opacity: 0;
-      transform: translate(0, 0) rotate(0deg) scale(0.7);
-      background: var(--confetti, #e7c873);
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.18);
-    }
-
-    .confetti-piece:nth-child(1) { left: 10%; top: 78%; --dx: 78px; --dy: -82px; --rot: -160deg; --delay: 0ms; --confetti: #f0cf72; }
-    .confetti-piece:nth-child(2) { left: 12%; top: 80%; --dx: 104px; --dy: -56px; --rot: -80deg; --delay: 40ms; --confetti: #9bc38b; }
-    .confetti-piece:nth-child(3) { left: 14%; top: 82%; --dx: 90px; --dy: -18px; --rot: -120deg; --delay: 70ms; --confetti: #f5e5b6; }
-    .confetti-piece:nth-child(4) { left: 16%; top: 76%; --dx: 118px; --dy: -92px; --rot: -200deg; --delay: 20ms; --confetti: #d9b15f; }
-    .confetti-piece:nth-child(5) { left: 18%; top: 83%; --dx: 82px; --dy: -4px; --rot: -150deg; --delay: 90ms; --confetti: #7fb78d; }
-    .confetti-piece:nth-child(6) { left: 20%; top: 79%; --dx: 128px; --dy: -48px; --rot: -230deg; --delay: 50ms; --confetti: #f3dba0; }
-    .confetti-piece:nth-child(7) { left: 90%; top: 78%; --dx: -78px; --dy: -82px; --rot: 160deg; --delay: 0ms; --confetti: #f0cf72; }
-    .confetti-piece:nth-child(8) { left: 88%; top: 80%; --dx: -104px; --dy: -56px; --rot: 80deg; --delay: 40ms; --confetti: #9bc38b; }
-    .confetti-piece:nth-child(9) { left: 86%; top: 82%; --dx: -90px; --dy: -18px; --rot: 120deg; --delay: 70ms; --confetti: #f5e5b6; }
-    .confetti-piece:nth-child(10) { left: 84%; top: 76%; --dx: -118px; --dy: -92px; --rot: 200deg; --delay: 20ms; --confetti: #d9b15f; }
-    .confetti-piece:nth-child(11) { left: 82%; top: 83%; --dx: -82px; --dy: -4px; --rot: 150deg; --delay: 90ms; --confetti: #7fb78d; }
-    .confetti-piece:nth-child(12) { left: 80%; top: 79%; --dx: -128px; --dy: -48px; --rot: 230deg; --delay: 50ms; --confetti: #f3dba0; }
-
-    .result.burst-active .confetti-piece {
-      animation: confetti-burst 900ms cubic-bezier(.15,.7,.2,1) forwards;
-      animation-delay: var(--delay, 0ms);
-    }
-
-    .money {
-      font-size: clamp(24px, 4.2vw, 38px);
-      font-weight: 700;
-      letter-spacing: .02em;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .money .yen {
-      font-weight: 600;
-      font-size: 0.7em;
-      opacity: .8;
-      margin-right: 2px;
-    }
-
-    .hero {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      width: 100%;
-      position: relative;
-      z-index: 1;
-    }
-
-    .sub {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    .zero-fine-note {
-      display: none;
-      align-self: flex-start;
-      padding: 5px 11px;
-      border-radius: 999px;
-      border: 1px solid rgba(188, 150, 69, 0.34);
-      background: linear-gradient(135deg, rgba(255,243,210,0.95), rgba(255,253,243,0.98));
-      color: #7c5a13;
-      font-size: 12px;
-      letter-spacing: .02em;
-      box-shadow: 0 4px 12px rgba(188, 150, 69, 0.10);
-    }
-
-    .result.zero-fine .zero-fine-note {
-      display: inline-flex;
-    }
-
-    .chip {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(220,38,38,0.24);
-      background: #fee2e2;
-    }
-
-    .finechip { border-color: rgba(239,68,68,0.3); }
-    .yen-inline { opacity:.8; margin-right:2px; }
-
-    @keyframes bump { 0%{ transform:scale(1);} 35%{ transform:scale(1.06);} 100%{ transform:scale(1);} }
-    .money.bump { animation: bump 450ms ease; }
-
-    @keyframes shine { from { left:-120%; } to { left:120%; } }
-    .money.shine::after {
-      content:"";
-      position:absolute;
-      top:0;
-      bottom:0;
-      left:-120%;
-      width:140%;
-      background: linear-gradient(120deg, rgba(255,255,255,0), rgba(255,255,255,0.6) 25%, rgba(255,255,255,0) 50%);
-      animation: shine .8s ease;
-    }
-
-    @keyframes confetti-burst {
-      0% {
-        opacity: 0;
-        transform: translate(0, 0) rotate(0deg) scale(0.6);
-      }
-      12% {
-        opacity: 1;
-      }
-      72% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0;
-        transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1);
-      }
-    }
-
-    details > summary { position:relative; padding-right:18px; }
-    details > summary::after {
-      content:"";
-      position:absolute;
-      right:4px;
-      top:50%;
-      width:8px;
-      height:8px;
-      border-right:2px solid var(--muted);
-      border-bottom:2px solid var(--muted);
-      transform: translateY(-50%) rotate(-45deg);
-      transition: transform .2s ease;
-    }
-    details[open] > summary::after { transform: translateY(-50%) rotate(45deg); }
-
-    @media (prefers-reduced-motion: reduce) {
-      * { animation: none !important; transition: none !important; }
-    }
-
-    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
-    .kpi { background: #f8fafc; border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
-    .kpi h4 { margin: 0; font-size: 12px; color: var(--muted); font-weight: 500; }
-    .kpi p { margin: 6px 0 0; font-size: 16px; font-weight: 700; }
-
-    details {
-      background: var(--card);
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px 14px;
-    }
-    details > summary { cursor: pointer; font-weight: 600; }
-    details[open] { background: #fff; }
-    ul { margin: 8px 0 0 18px; }
-    .explain-flow {
-      display: grid;
-      gap: 10px;
-      margin: 10px 0 12px;
-    }
-    .flow-card {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 12px;
-      background: #f8fafc;
-    }
-    .flow-label {
-      margin-bottom: 8px;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 700;
-      letter-spacing: .04em;
-    }
-    .flow-copy {
-      margin: 0;
-      font-size: 14px;
-      line-height: 1.7;
-    }
-    .compact-rules {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-    }
-    .compact-rule {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 9px;
-      border-radius: 999px;
-      background: #ffffff;
-      border: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
-    }
-    .fine-scale {
-      display: grid;
-      gap: 8px;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      margin-top: 10px;
-    }
-    .fine-tier {
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid var(--line);
-      background: #ffffff;
-      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
-    }
-    .fine-tier strong {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 13px;
-    }
-    .fine-tier span {
-      display: block;
-      font-size: 16px;
-      font-weight: 700;
-      line-height: 1.2;
-    }
-    .fine-tier small {
-      display: block;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.5;
-    }
-    .fine-tier.is-active {
-      border-color: var(--accent-2);
-      background: #eff6ff;
-      box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
-      transform: translateY(-1px);
-    }
-    .fine-scale-note {
-      margin-top: 10px;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-    .muted { color: var(--muted); }
-    .danger { color: var(--danger); }
-
-    @media (min-width: 720px) {
-      .grid {
-        grid-template-columns: minmax(290px, 330px) minmax(0, 1fr);
-      }
-    }
-
-    @media (max-width: 480px) {
-      body { padding: 12px; }
-      .app { padding: 16px 14px; border-radius: 14px; }
-      header h1 { font-size: 20px; }
-      .result { flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; }
-      .money { font-size: 32px; }
-      select {
-        font-size: 16px;
-        padding: 12px;
-      }
-      .picker-row { max-width: none; }
-      .fine-scale { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      details > summary { font-size: 14px; }
-      .sub { font-size: 13px; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#fff7eb">
+<title>松風寮 | 寮費チェッカー</title>
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #fff7eb;
+    --ink: #202d26;
+    --muted: #536157;
+    --line: #e1ddcf;
+    --surface: #fffefa;
+    --pine: #215a47;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background: radial-gradient(ellipse at top right, #ffead1, transparent 60%) var(--paper);
+    font: 15px/1.65 "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  }
+  main { width: min(100% - 32px, 960px); margin: 0 auto; padding: clamp(24px, 6vw, 64px) 0; }
+  header { margin-bottom: 24px; }
+  .brand { display: inline-block; padding: 4px 12px; border-radius: 999px; background: #fbe4c9; color: #704825; font-weight: 700; }
+  h1 { font-size: clamp(28px, 6vw, 46px); line-height: 1.25; margin: 10px 0; }
+  h2 { font-size: 19px; margin: 2px 0 14px; }
+  p { margin: 0; }
+  .muted, .hint { color: var(--muted); }
+  .hint { font-size: 13px; }
+  .layout { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 14px; }
+  .panel, .details { border: 1px solid var(--line); border-radius: 22px; background: var(--surface); }
+  .panel { padding: clamp(16px, 3vw, 26px); }
+  .field { margin-top: 16px; }
+  .field-title { display: block; font-weight: 700; margin-bottom: 6px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  select {
+    width: 100%; min-width: 0; min-height: 44px; padding: 8px;
+    font: inherit; color: var(--ink); background: #f6f8f1;
+    border: 1px solid #a9b6a6; border-radius: 8px;
+  }
+  :focus-visible { outline: 3px solid #ad671c; outline-offset: 3px; }
+  .basis { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
+  .basis label { font-size: 13px; cursor: pointer; }
+  .basis-options { margin-top: 8px; }
+  .receipt { position: relative; overflow: hidden; background: #edf7e9; border-color: #cbdcc7; }
+  .receipt h2 { margin-bottom: 4px; }
+  .total { font-size: clamp(33px, 7vw, 58px); font-weight: 800; line-height: 1.2; color: var(--pine); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .receipt dl { margin: 14px 0 0; }
+  .receipt dl > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 9px 0; border-top: 1px solid #cbdcc7; }
+  dt, dd { margin: 0; }
+  dd { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .details { margin-top: 14px; padding: 13px clamp(16px, 3vw, 26px); }
+  summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+  .details p, .details table, .details details { margin-top: 10px; }
+  .reason { margin-top: 14px; padding: 12px 14px; background: #f6f8f1; border-radius: 12px; }
+  .reason h3 { margin: 0; font-size: 15px; }
+  .reason p { margin-top: 5px; }
+  table { width: 100%; border-collapse: collapse; text-align: left; }
+  th, td { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  th:last-child, td:last-child { text-align: right; }
+  .particle { position: absolute; bottom: 10%; width: 7px; height: 11px; border-radius: 2px; pointer-events: none; }
+  @media (max-width: 650px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+</style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>寮費チェッカー</h1>
-    </header>
+<main>
+  <header>
+    <p class="brand">松風寮</p>
+    <h1>寮費チェッカー</h1>
+    <p class="muted">何月分まで払ったかを選ぶと、次に払う金額が分かります。</p>
+  </header>
 
-    <div class="grid">
-      <div class="card input-card">
-        <div class="picker-block primary">
-          <label>最後に払った「月分」<span class="muted" style="font-weight:400"></span></label>
-          <div class="picker-row">
-            <div class="select-shell">
-              <select id="lastPaidYear" aria-label="最後に払った年"></select>
-            </div>
-            <div class="select-shell">
-              <select id="lastPaidMonth" aria-label="最後に払った月"></select>
-            </div>
-          </div>
-        </div>
-
-        <div class="picker-divider"></div>
-
-        <div class="picker-block">
-          <div class="picker-head">
-            <label style="margin:0;">基準月（自動）</label>
-            <label class="check-label"><input type="checkbox" id="basisManual" /> 手動設定</label>
-          </div>
-          <div class="picker-row">
-            <div class="select-shell">
-              <select id="basisYear" aria-label="基準年"></select>
-            </div>
-            <div class="select-shell">
-              <select id="basisMonth" aria-label="基準月"></select>
-            </div>
-          </div>
-          <div class="hint">未チェックなら日本時間で今月を自動取得。</div>
+  <div class="layout">
+    <section class="panel" aria-labelledby="inputTitle">
+      <h2 id="inputTitle">支払い状況</h2>
+      <div class="field">
+        <p class="field-title">最後に払った月分</p>
+        <div class="pair">
+          <select id="lastPaidYear" aria-label="最後に払った年"></select>
+          <select id="lastPaidMonth" aria-label="最後に払った月"></select>
         </div>
       </div>
-
-      <div class="card result-card">
-        <div class="result" id="resultBox">
-          <div class="confetti-layer" aria-hidden="true">
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-            <span class="confetti-piece"></span>
-          </div>
-          <div class="hero">
-            <div class="muted">次に払う総額</div>
-            <div class="money"><span class="yen">¥</span><span id="grandTotal">0</span></div>
-            <div class="sub">内訳：寮費 <span class="yen-inline">¥</span><span id="feesTotal">0</span> ＋ <span class="chip finechip">罰金 <span class="yen-inline">¥</span><span id="fine">0</span></span></div>
-            <div class="zero-fine-note" id="zeroFineNote">支払いなし</div>
-          </div>
-          <div class="kpis" style="display:none">
-            <div class="kpi"><h4>滞納(生)</h4><p id="rawCount">0</p></div>
-            <div class="kpi"><h4>特殊後</h4><p id="effCount">0</p></div>
-            <div class="kpi"><h4>対象期間</h4><p id="range">—</p></div>
-          </div>
+      <div class="field">
+        <div class="basis">
+          <p>基準月 <strong id="basisLabel"></strong></p>
+          <label><input type="checkbox" id="basisManual" aria-controls="basisOptions"> 基準月を変更</label>
+        </div>
+        <div class="pair basis-options" id="basisOptions" hidden>
+          <select id="basisYear" aria-label="基準年"></select>
+          <select id="basisMonth" aria-label="基準月"></select>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="card" style="margin-top:12px">
-      <details id="breakdown">
-        <summary>詳細（罰金の根拠・対象月）</summary>
-        <div class="explain-flow">
-          <div class="flow-card">
-            <div class="flow-label">数え方</div>
-            <p class="flow-copy" id="fineCountSummary">月を選ぶと、ここで罰金の数え方がわかります。</p>
-            <div class="compact-rules">
-              <span class="compact-rule">2月 + 3月 → 1カウント</span>
-              <span class="compact-rule">8月 + 9月 → 1カウント</span>
-              <span class="compact-rule">2025年5月 + 6月 → 1カウント</span>
-            </div>
-          </div>
-          <div class="flow-card">
-            <div class="flow-label">罰金テーブル</div>
-            <div class="fine-scale" id="fineScale">
-              <div class="fine-tier" data-tier="none"><strong>0–1か月</strong><span>¥0</span><small>罰金なし</small></div>
-              <div class="fine-tier" data-tier="low"><strong>2–5か月</strong><span>¥5,000</span><small>最初の帯</small></div>
-              <div class="fine-tier" data-tier="mid"><strong>6–11か月</strong><span>¥10,000</span><small>次の帯</small></div>
-              <div class="fine-tier" data-tier="high"><strong>12か月以上</strong><span>¥15,000+</span><small>12か月ごとに +¥5,000</small></div>
-            </div>
-            <div class="fine-scale-note" id="fineScaleNote">今のカウントがどの帯に入るか、ここでわかります。</div>
-          </div>
-        </div>
-        <ul id="explainSimple"></ul>
-        <details id="more" style="margin-top:8px">
-          <summary>さらに詳しく（対象月一覧・各月寮費）</summary>
-          <ul id="explainFull" style="margin-top:6px"></ul>
-        </details>
-      </details>
-    </div>
-
+    <section class="panel receipt" id="receipt" aria-labelledby="resultTitle">
+      <h2 id="resultTitle">次に払う金額</h2>
+      <div role="status" aria-atomic="true">
+        <p class="total" id="grandTotal">—</p>
+        <p class="hint" id="resultNote"></p>
+      </div>
+      <dl id="breakdown" hidden>
+        <div><dt>寮費 <span class="hint" id="feeRange"></span></dt><dd id="feesTotal"></dd></div>
+        <div><dt>罰金 <span class="hint" id="arrearsRange"></span></dt><dd id="fine"></dd></div>
+      </dl>
+    </section>
   </div>
 
+  <details class="details" id="calculation" hidden>
+    <summary>計算の根拠を見る</summary>
+    <section class="reason">
+      <h3>対象期間</h3>
+      <p id="feePeriod"></p>
+      <p id="arrearsPeriod"></p>
+      <p class="hint" id="periodNote"></p>
+    </section>
+    <section class="reason" id="oldReason">
+      <h3>旧制度分</h3>
+      <p id="oldCount"></p>
+      <p class="hint" id="specialNote"></p>
+      <p id="oldFineFormula"></p>
+    </section>
+    <section class="reason" id="newReason">
+      <h3>新制度分</h3>
+      <p id="newCount"></p>
+      <p id="newFineFormula"></p>
+    </section>
+    <section class="reason">
+      <h3>支払い総額の計算</h3>
+      <p id="totalFormula"></p>
+    </section>
+    <details id="monthlyDetails">
+      <summary>月ごとの寮費</summary>
+      <table>
+        <thead><tr><th scope="col">対象月</th><th scope="col">寮費</th></tr></thead>
+        <tbody id="monthlyFees"></tbody>
+      </table>
+    </details>
+  </details>
+</main>
 <script>
-(function(){
-  const fmtMoney = (n)=> n.toLocaleString('ja-JP');
-  const ymt = (y,m)=> `${y}年${m}月`;
-  const pad2 = (n)=> String(n).padStart(2, '0');
+(() => {
+  const el = (id) => document.getElementById(id);
+  const formatMonth = ({y, m}) => `${y}年${m}月`;
+  const money = (amount) => `${amount.toLocaleString('ja-JP')}円`;
+  const monthIndex = ({y, m}) => y * 12 + m - 1;
+  const startOfProposal = monthIndex({y: 2026, m: 12});
 
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // ==== Sound policy: no audio output ====
-  (function enforceNoSound(){
-    try {
-      const muteAll = (root=document)=>{
-        root.querySelectorAll && root.querySelectorAll('audio, video').forEach(el => {
-          try {
-            el.muted = true;
-            el.pause && el.pause();
-            el.removeAttribute && el.removeAttribute('autoplay');
-          } catch(_){ }
-        });
-      };
-      muteAll(document);
-      const mo = new MutationObserver(muts => {
-        for (const m of muts){
-          for (const n of m.addedNodes){
-            if (!(n instanceof HTMLElement)) continue;
-            if (n.matches && (n.matches('audio') || n.matches('video'))){
-              try { n.muted = true; n.pause && n.pause(); n.removeAttribute && n.removeAttribute('autoplay'); } catch(_){ }
-            }
-            muteAll(n);
-          }
-        }
-      });
-      mo.observe(document.documentElement, { childList: true, subtree: true });
-    } catch(_){ }
-  })();
-
-  function animateCount(el, from, to, duration=700){
-    if (prefersReduced) { el.textContent = fmtMoney(to); return; }
-    const start = performance.now();
-    const step = (now)=>{
-      const p = Math.min(1, (now - start) / duration);
-      const val = Math.round(from + (to - from) * (1 - Math.pow(1-p, 3)));
-      el.textContent = fmtMoney(val);
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }
-
-  function bump(el){ if(!el) return; el.classList.remove('bump','shine'); void el.offsetWidth; el.classList.add('bump','shine'); setTimeout(()=>{ el.classList.remove('bump','shine'); }, 900); }
-
-  function populateMonthSelects(yearEl, monthEl, fromYear, toYear){
-    if (!yearEl || !monthEl) return;
-
-    yearEl.innerHTML = '<option value="">年</option>';
-    for (let y = toYear; y >= fromYear; y -= 1){
-      const opt = document.createElement('option');
-      opt.value = String(y);
-      opt.textContent = `${y}年`;
-      yearEl.appendChild(opt);
-    }
-
-    monthEl.innerHTML = '<option value="">月</option>';
-    for (let m = 1; m <= 12; m += 1){
-      const opt = document.createElement('option');
-      opt.value = pad2(m);
-      opt.textContent = `${m}月`;
-      monthEl.appendChild(opt);
-    }
-  }
-
-  function setYearMonthSelects(yearEl, monthEl, year, month){
-    if (!yearEl || !monthEl) return;
-    yearEl.value = year ? String(year) : '';
-    monthEl.value = month ? pad2(month) : '';
-  }
-
-  function getYearMonthFromSelects(yearEl, monthEl){
-    if (!yearEl || !monthEl || !yearEl.value || !monthEl.value) return null;
-    return {
-      y: parseInt(yearEl.value, 10),
-      m: parseInt(monthEl.value, 10)
-    };
-  }
-
-  function setSelectsDisabled(yearEl, monthEl, disabled){
-    if (yearEl) yearEl.disabled = disabled;
-    if (monthEl) monthEl.disabled = disabled;
-  }
-
-  function initMonthSelects(yearId, monthId, opts = {}){
-    const yearEl = document.getElementById(yearId);
-    const monthEl = document.getElementById(monthId);
-    if (!yearEl || !monthEl) return null;
-    const now = nowJST();
-    const fromYear = opts.fromYear || 2020;
-    const toYear = opts.toYear || now.getFullYear() + 2;
-    populateMonthSelects(yearEl, monthEl, fromYear, toYear);
-    return { yearEl, monthEl };
-  }
-
-  const state = { fine: 0, fees: 0, grand: 0, lastBurstKey: '', burstTimer: null };
-  const nowJST = ()=> new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
-
-  function enumerateMonths(start, end){
-    const out = [];
-    let y = start.y, m = start.m;
-    do {
-      m += 1;
-      if (m === 13) { y++; m = 1; }
-      out.push({y, m});
-    } while (y < end.y || (y === end.y && m < end.m));
-    return out;
-  }
+  const today = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tokyo', year: 'numeric', month: 'numeric'
+  }).formatToParts().map(({type, value}) => [type, Number(value)]));
+  const current = {y: today.year, m: today.month};
 
   function applySpecialCount(months){
     const set = new Set(months.map(v=> `${v.y}-${v.m}`));
@@ -723,255 +183,139 @@
     return 17000;
   }
 
-  function getFineTierKey(effCount){
-    if (effCount <= 1) return 'none';
-    if (effCount <= 5) return 'low';
-    if (effCount <= 11) return 'mid';
-    return 'high';
+  function readMonth(prefix){
+    const y = Number(el(prefix + 'Year').value);
+    const m = Number(el(prefix + 'Month').value);
+    return y && m ? {y, m} : null;
   }
 
-  function updateFineGuide({ hasInput=false, paidUp=false, currentOnly=false, rawCount=0, effCount=0, fine=0, reductions=[], penaltyRange='なし' } = {}){
-    const countSummaryEl = document.getElementById('fineCountSummary');
-    const scaleNoteEl = document.getElementById('fineScaleNote');
-    const tiers = document.querySelectorAll('#fineScale .fine-tier');
-    const tierKey = getFineTierKey(effCount);
-
-    tiers.forEach((tier)=>{
-      tier.classList.toggle('is-active', hasInput && tier.dataset.tier === tierKey);
-    });
-
-    if (!countSummaryEl || !scaleNoteEl) return;
-
-    if (!hasInput){
-      countSummaryEl.textContent = '月を選ぶと、ここで罰金の数え方がわかります。';
-      scaleNoteEl.textContent = '今のカウントがどの帯に入るか、ここでわかります。';
-      return;
-    }
-
-    if (paidUp){
-      countSummaryEl.innerHTML = '未払いはありません。<strong>罰金カウント 0か月</strong>です。';
-      scaleNoteEl.innerHTML = 'いまは <strong>0–1か月</strong> の帯なので、罰金は <strong>¥0</strong> です。';
-      return;
-    }
-
-    if (currentOnly){
-      countSummaryEl.innerHTML = '罰金対象はありません。今月分だけなので <strong>0か月</strong> です。';
-      scaleNoteEl.innerHTML = 'いまは <strong>0–1か月</strong> の帯なので、罰金は <strong>¥0</strong> です。';
-      return;
-    }
-
-    if (reductions.length){
-      countSummaryEl.innerHTML = `罰金対象は <strong>${penaltyRange}</strong>。特例で <strong>${rawCount}か月 → ${effCount}か月</strong> にして数えます。`;
-    } else {
-      countSummaryEl.innerHTML = `罰金対象は <strong>${penaltyRange}</strong>。そのまま <strong>${effCount}か月</strong> として数えます。`;
-    }
-
-    if (tierKey === 'none'){
-      scaleNoteEl.innerHTML = '特例後のカウントが <strong>0–1か月</strong> なので、罰金は <strong>¥0</strong> です。';
-    } else if (tierKey === 'low'){
-      scaleNoteEl.innerHTML = `今回は <strong>2–5か月</strong> の帯なので、罰金は <strong>¥${fmtMoney(fine)}</strong> です。`;
-    } else if (tierKey === 'mid'){
-      scaleNoteEl.innerHTML = `今回は <strong>6–11か月</strong> の帯なので、罰金は <strong>¥${fmtMoney(fine)}</strong> です。`;
-    } else {
-      scaleNoteEl.innerHTML = `今回は <strong>12か月以上</strong> の帯なので、罰金は <strong>¥${fmtMoney(fine)}</strong> です。12か月増えるごとに +¥5,000 されます。`;
-    }
+  function populate(prefix, initial){
+    const year = el(prefix + 'Year');
+    const month = el(prefix + 'Month');
+    year.add(new Option('年を選択', ''));
+    month.add(new Option('月を選択', ''));
+    for (let y = current.y + 2; y >= 2020; y--) year.add(new Option(y + '年', y));
+    for (let m = 1; m <= 12; m++) month.add(new Option(m + '月', m));
+    year.value = initial?.y ?? '';
+    month.value = initial?.m ?? '';
   }
 
-  function triggerZeroFineBurst(resultEl, burstKey){
-    if (!resultEl || prefersReduced || !burstKey) return;
-    if (state.lastBurstKey === burstKey) return;
-    state.lastBurstKey = burstKey;
-    resultEl.classList.remove('burst-active');
-    void resultEl.offsetWidth;
-    resultEl.classList.add('burst-active');
-    if (state.burstTimer) clearTimeout(state.burstTimer);
-    state.burstTimer = setTimeout(()=>{
-      resultEl.classList.remove('burst-active');
-    }, 1100);
+  function monthRange(months){
+    if (!months.length) return 'なし';
+    const first = formatMonth(months[0]);
+    return months.length === 1 ? first + '分' : first + '〜' + formatMonth(months.at(-1)) + '分';
+  }
+
+  let celebrationKey = '';
+  function celebrate(key){
+    if (key === celebrationKey) return;
+    celebrationKey = key;
+    el('receipt').querySelectorAll('.particle').forEach((piece) => piece.remove());
+    if (!key || matchMedia('(prefers-reduced-motion: reduce)').matches || !Element.prototype.animate) return;
+    const receipt = el('receipt');
+    const colors = ['#498565', '#d48c42', '#a1ba62'];
+    for (const direction of [1, -1]){
+      for (let i = 0; i < 6; i++){
+        const piece = document.createElement('span');
+        piece.className = 'particle';
+        piece.setAttribute('aria-hidden', 'true');
+        piece.style.left = direction === 1 ? '10%' : '88%';
+        piece.style.background = colors[i % colors.length];
+        receipt.append(piece);
+        const x = direction * receipt.clientWidth * (.22 + i * .03);
+        const y = -receipt.clientHeight * (.22 + (i % 3) * .12);
+        const animation = piece.animate([
+          {opacity: 1, transform: 'translate(0, 0)'},
+          {opacity: 0, transform: `translate(${x}px, ${y}px) rotate(${direction * (i + 1) * 65}deg)`}
+        ], {duration: 700 + i * 30, easing: 'ease-out'});
+        animation.onfinish = () => piece.remove();
+      }
+    }
   }
 
   function render(){
-    const basisManualEl = /** @type {HTMLInputElement} */(document.getElementById('basisManual'));
-    const basisYearEl = /** @type {HTMLSelectElement} */(document.getElementById('basisYear'));
-    const basisMonthEl = /** @type {HTMLSelectElement} */(document.getElementById('basisMonth'));
+    const manual = el('basisManual').checked;
+    const basis = manual ? readMonth('basis') : current;
+    const paid = readMonth('lastPaid');
+    el('basisOptions').hidden = !manual;
+    el('basisLabel').textContent = basis ? formatMonth(basis) : '未選択';
+    el('calculation').hidden = true;
+    el('breakdown').hidden = true;
 
-    let refDate = nowJST();
-    const basisPicked = getYearMonthFromSelects(basisYearEl, basisMonthEl);
-    if (basisManualEl && basisManualEl.checked && basisPicked){
-      refDate = new Date(basisPicked.y, basisPicked.m - 1, 1);
-    }
-    const basis = { y: refDate.getFullYear(), m: refDate.getMonth()+1 };
-    const basisLabel = document.getElementById('basis');
-    if (basisLabel) {
-      basisLabel.textContent = `${refDate.getFullYear()}年${refDate.getMonth()+1}月（対象は${ymt(basis.y,basis.m)}まで）`;
-    }
+    let message = '';
+    if (!basis) message = '基準年と基準月を選んでください。';
+    else if (!paid) message = '最後に払った年と月を選んでください。';
 
-    const lastPaidYearEl = /** @type {HTMLSelectElement} */(document.getElementById('lastPaidYear'));
-    const lastPaidMonthEl = /** @type {HTMLSelectElement} */(document.getElementById('lastPaidMonth'));
-    const lastPaidPicked = getYearMonthFromSelects(lastPaidYearEl, lastPaidMonthEl);
-    const explainSimple = document.getElementById('explainSimple');
-    const explainFull = document.getElementById('explainFull');
-    const rawCountEl = document.getElementById('rawCount');
-    const effCountEl = document.getElementById('effCount');
-    const fineEl = document.getElementById('fine');
-    const rangeEl = document.getElementById('range');
-    const feesTotalEl = document.getElementById('feesTotal');
-    const grandTotalEl = document.getElementById('grandTotal');
-    const resultBoxEl = document.getElementById('resultBox');
-
-    explainSimple.innerHTML = '';
-    explainFull.innerHTML = '';
-
-    if (!lastPaidPicked){
-      rawCountEl.textContent = '0';
-      effCountEl.textContent = '0';
-      fineEl.textContent = '0';
-      rangeEl.textContent = '—';
-      feesTotalEl.textContent = '0';
-      grandTotalEl.textContent = '0';
-      if (resultBoxEl) resultBoxEl.classList.remove('zero-fine');
-      updateFineGuide({ hasInput: false });
-      state.lastBurstKey = '';
-      state.fine = 0; state.fees = 0; state.grand = 0;
+    if (message){
+      el('grandTotal').textContent = '—';
+      el('resultNote').textContent = message;
+      celebrate('');
       return;
     }
 
-    const lastPaid = lastPaidPicked;
-
-    if (lastPaid.y > basis.y || (lastPaid.y === basis.y && lastPaid.m >= basis.m)){
-      rawCountEl.textContent = '0';
-      effCountEl.textContent = '0';
-      fineEl.textContent = '0';
-      rangeEl.textContent = '滞納なし';
-      feesTotalEl.textContent = '0';
-      grandTotalEl.textContent = '0';
-      if (resultBoxEl) resultBoxEl.classList.add('zero-fine');
-      updateFineGuide({ hasInput: true, paidUp: true, effCount: 0, fine: 0 });
-      triggerZeroFineBurst(resultBoxEl, `clear:${lastPaid.y}-${lastPaid.m}:${basis.y}-${basis.m}`);
-      state.fine = 0; state.fees = 0; state.grand = 0;
-      return;
+    const months = [];
+    for (let index = monthIndex(paid) + 1; index <= monthIndex(basis); index++){
+      months.push({y: Math.floor(index / 12), m: index % 12 + 1});
     }
+    const arrears = months.slice(0, -1);
+    const proposal = monthIndex(basis) >= startOfProposal;
+    const transition = proposal && arrears.some((month) => monthIndex(month) < startOfProposal);
+    const chargeableMonths = proposal
+      ? arrears.slice(0, -1).filter((month) => monthIndex(month) >= startOfProposal)
+      : [];
+    const usesOldRules = !proposal || transition;
+    const old = usesOldRules ? applySpecialCount(arrears) : {effCount: 0, reductions: []};
+    const oldFine = calcFine(old.effCount);
+    const addedMonths = chargeableMonths.length;
+    const newFine = addedMonths * 3000;
+    const fine = oldFine + newFine;
+    const fees = months.reduce((sum, {y, m}) => sum + feeFor(y, m), 0);
 
-    const months = enumerateMonths(lastPaid, basis);
-    const arrearsMonths = months.slice(0, -1);
+    el('grandTotal').textContent = money(fees + fine);
+    el('resultNote').textContent = months.length
+      ? `寮費 ${months.length}か月分・滞納 ${arrears.length}か月`
+      : '基準月分まで支払い済みです。';
+    el('breakdown').hidden = false;
+    el('feeRange').textContent = monthRange(months);
+    el('arrearsRange').textContent = arrears.length ? monthRange(arrears) : '滞納なし';
+    el('feesTotal').textContent = money(fees);
+    el('fine').textContent = money(fine);
 
-    let rawCount = 0;
-    let effCount = 0;
-    let reductions = [];
-
-    if (arrearsMonths.length > 0) {
-      const res = applySpecialCount(arrearsMonths);
-      rawCount = res.rawCount;
-      effCount = res.effCount;
-      reductions = res.reductions;
-      rangeEl.textContent = `${ymt(arrearsMonths[0].y, arrearsMonths[0].m)} 〜 ${ymt(arrearsMonths[arrearsMonths.length - 1].y, arrearsMonths[arrearsMonths.length - 1].m)}`;
-    } else {
-      rawCount = 0;
-      effCount = 0;
-      reductions = [];
-      rangeEl.textContent = '滞納なし';
-    }
-
-    const penaltyRangeText = arrearsMonths.length > 0
-      ? `${ymt(arrearsMonths[0].y, arrearsMonths[0].m)} 〜 ${ymt(arrearsMonths[arrearsMonths.length - 1].y, arrearsMonths[arrearsMonths.length - 1].m)}`
-      : 'なし（今月分のみ）';
-
-    rawCountEl.textContent = String(rawCount);
-    effCountEl.textContent = String(effCount);
-
-    const moneyEl = document.querySelector('.money');
-    const fineChip = document.querySelector('.chip.finechip');
-
-    const feesTotal = months.reduce((sum, v) => sum + feeFor(v.y, v.m), 0);
-    const fine = calcFine(effCount);
-    const grand = feesTotal + fine;
-    updateFineGuide({
-      hasInput: true,
-      currentOnly: arrearsMonths.length === 0,
-      rawCount,
-      effCount,
-      fine,
-      reductions,
-      penaltyRange: penaltyRangeText
-    });
-    if (resultBoxEl) resultBoxEl.classList.toggle('zero-fine', grand === 0);
-    if (grand === 0) {
-      triggerZeroFineBurst(resultBoxEl, `zero:${lastPaid.y}-${lastPaid.m}:${basis.y}-${basis.m}:${grand}`);
-    } else {
-      state.lastBurstKey = '';
-      if (resultBoxEl) resultBoxEl.classList.remove('burst-active');
-    }
-
-    animateCount(fineEl, state.fine, fine, 650);
-    animateCount(feesTotalEl, state.fees, feesTotal, 700);
-    animateCount(grandTotalEl, state.grand, grand, 800);
-
-    bump(moneyEl);
-    bump(fineChip);
-
-    state.fine = fine; state.fees = feesTotal; state.grand = grand;
-
-    const simple = [];
-    if (arrearsMonths.length > 0) {
-      simple.push(`<li>対象期間: ${ymt(arrearsMonths[0].y, arrearsMonths[0].m)} 〜 ${ymt(arrearsMonths[arrearsMonths.length - 1].y, arrearsMonths[arrearsMonths.length - 1].m)}</li>`);
-    } else {
-      simple.push('<li>対象期間: なし（今月分のみ未払い）</li>');
-    }
-    simple.push(`<li>罰金カウント: <strong>${effCount}か月</strong>${reductions.length ? `（特例 ${reductions.length}件 適用）` : ''}</li>`);
-    let tableNote = '';
-    if (effCount >= 2 && effCount <= 5) tableNote = '（2–5か月 → ¥5,000）';
-    else if (effCount >= 6 && effCount <= 11) tableNote = '（6–11か月 → ¥10,000）';
-    else if (effCount >= 12) {
-      const extraStep = Math.floor((effCount - 12) / 12);
-      tableNote = `（12か月以上 → ¥15,000 ＋ 12か月ごとに¥5,000×${extraStep}）`;
-    }
-    simple.push(`<li>今月の罰金: <strong>¥${fmtMoney(fine)}</strong> ${tableNote}</li>`);
-    simple.push(`<li>合計: <strong>¥${fmtMoney(grand)}</strong>（寮費 ¥${fmtMoney(feesTotal)} + 罰金 ¥${fmtMoney(fine)}）</li>`);
-    explainSimple.innerHTML = simple.join('');
-
-    const full = [];
-    full.push(`<li>対象月: ${months.map(v=> `${v.y}-${String(v.m).padStart(2,'0')}`).join(', ')}</li>`);
-    if (arrearsMonths.length > 0) {
-      full.push(`<li>罰金カウント対象月: ${arrearsMonths.map(v => `${v.y}-${String(v.m).padStart(2,'0')}`).join(', ')}</li>`);
-    } else {
-      full.push('<li>罰金カウント対象月: なし</li>');
-    }
-    if (reductions.length){
-      for (const r of reductions){ full.push(`<li>特例圧縮: ${r.label}</li>`); }
-    } else {
-      full.push('<li>特例圧縮: なし</li>');
-    }
-    full.push(`<li>カウント(生→特例後): ${rawCount} → <strong>${effCount}</strong></li>`);
-    full.push(`<li>寮費合計: ¥${fmtMoney(feesTotal)}</li>`);
-    full.push(`<li>各月寮費: ${months.map(v => `${v.y}-${String(v.m).padStart(2,'0')} ¥${fmtMoney(feeFor(v.y, v.m))}`).join(', ')}</li>`);
-    explainFull.innerHTML = full.join('');
+    el('feePeriod').textContent = `寮費の対象：${monthRange(months)}（${months.length}か月分）`;
+    el('arrearsPeriod').textContent = `滞納期間：${monthRange(arrears)}（${arrears.length}か月）`;
+    el('periodNote').textContent = proposal
+      ? '基準月分は寮費に含みます。新制度分の3,000円は基準月分とその前月分には加算しません。'
+      : '基準月分は寮費に含みます。罰金は前月分までの未払いで計算します。';
+    el('oldReason').hidden = !usesOldRules;
+    el('oldCount').textContent = proposal
+      ? `2026年11月以前の未払いがあるため、滞納期間全体を旧制度でも数えます。${arrears.length}か月 − 特例${old.reductions.length}組 ＝ ${old.effCount}か月。`
+      : `滞納${arrears.length}か月 − 特例${old.reductions.length}組 ＝ ${old.effCount}か月。`;
+    const specials = old.reductions.map(({y, pair}) => `${y}年${pair.join('・')}月分`).join('、');
+    el('specialNote').textContent = specials ? `2か月分を1か月と数えた組み合わせ：${specials}` : '適用された特例はありません。';
+    const oldBandStart = Math.floor(old.effCount / 12) * 12;
+    let oldBand = '0〜1か月';
+    if (old.effCount >= 12) oldBand = `${oldBandStart}〜${oldBandStart + 11}か月`;
+    else if (old.effCount >= 6) oldBand = '6〜11か月';
+    else if (old.effCount >= 2) oldBand = '2〜5か月';
+    el('oldFineFormula').textContent = `特例適用後は「${oldBand}」の段階にあたり、旧制度分は${money(oldFine)}です。`;
+    el('newReason').hidden = !proposal;
+    el('newCount').textContent = `2026年12月分以降の加算対象：${monthRange(chargeableMonths)}（${addedMonths}か月）`;
+    el('newFineFormula').textContent = `${addedMonths}か月 × 3,000円 ＝ ${money(newFine)}`;
+    const fineBreakdown = proposal && usesOldRules
+      ? `（旧制度分${money(oldFine)} ＋ 新制度分${money(newFine)}）`
+      : '';
+    el('totalFormula').textContent = `寮費${money(fees)} ＋ 罰金${money(fine)}${fineBreakdown} ＝ ${money(fees + fine)}`;
+    el('monthlyDetails').hidden = !months.length;
+    el('monthlyFees').innerHTML = months.map(({y, m}) =>
+      `<tr><td>${formatMonth({y, m})}分</td><td>${money(feeFor(y, m))}</td></tr>`
+    ).join('');
+    el('calculation').hidden = false;
+    celebrate(fees + fine === 0 ? `${monthIndex(paid)}:${monthIndex(basis)}` : '');
   }
 
-  const lastPaidField = initMonthSelects('lastPaidYear', 'lastPaidMonth', { fromYear: 2020 });
-  const basisField = initMonthSelects('basisYear', 'basisMonth', { fromYear: 2020 });
-
-  const basisManualEl = /** @type {HTMLInputElement} */(document.getElementById('basisManual'));
-  if (basisField){
-    const now0 = nowJST();
-    setYearMonthSelects(basisField.yearEl, basisField.monthEl, now0.getFullYear(), now0.getMonth() + 1);
-    setSelectsDisabled(basisField.yearEl, basisField.monthEl, true);
-    basisField.yearEl.addEventListener('change', render);
-    basisField.monthEl.addEventListener('change', render);
-  }
-  if (lastPaidField){
-    lastPaidField.yearEl.addEventListener('change', render);
-    lastPaidField.monthEl.addEventListener('change', render);
-  }
-  if (basisManualEl && basisField){
-    basisManualEl.addEventListener('change', ()=>{
-      if (!basisManualEl.checked) {
-        const now0 = nowJST();
-        setYearMonthSelects(basisField.yearEl, basisField.monthEl, now0.getFullYear(), now0.getMonth() + 1);
-      }
-      setSelectsDisabled(basisField.yearEl, basisField.monthEl, !basisManualEl.checked);
-      render();
-    });
-  }
+  populate('lastPaid');
+  populate('basis', current);
+  document.querySelectorAll('select, #basisManual').forEach((control) => control.addEventListener('change', render));
   render();
 })();
 </script>
